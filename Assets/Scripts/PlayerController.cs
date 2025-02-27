@@ -12,19 +12,16 @@ public class PlayerController : MonoBehaviour
     public float groundCheckRadius = 0.2f;
     public GameObject attackPrefab;
     public float attackOffset = 1f;
-
     public float dashForce = 20f;
     public float dashDuration = 0.2f;
     public float dashCooldown = 1f;
     public bool isDashing = false;
     public bool hasIFrames = false;
     private float dashCooldownTimer = 0f;
-
     public float attackCooldown = 1f;
     private float attackCooldownTimer = 0f;
-    public float attackDuration = 0.2f; // Time player is locked in place during attack
+    public float attackDuration = 0.2f;
     private bool isAttacking = false;
-
     private Rigidbody2D rb;
     private bool isGrounded;
     private float coyoteTimeCounter;
@@ -40,7 +37,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        if (!isAttacking) // Prevent movement when attacking on the ground
+        if (!isAttacking)
         {
             Move();
         }
@@ -64,7 +61,6 @@ public class PlayerController : MonoBehaviour
             Jump();
         }
 
-        // Attack logic with cooldown
         if (attackCooldownTimer > 0)
         {
             attackCooldownTimer -= Time.deltaTime;
@@ -149,7 +145,6 @@ public class PlayerController : MonoBehaviour
             attackBehavior = attack.AddComponent<AttackBehavior>();
         }
 
-        // Lock movement only if attacking while grounded
         if (isGrounded)
         {
             StartCoroutine(AttackLock());
@@ -201,7 +196,6 @@ public class AttackBehavior : MonoBehaviour
         if (collision.CompareTag("Enemy"))
         {
             Debug.Log("Enemy hit!");
-            // Add damage logic here
         }
     }
 }
