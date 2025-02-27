@@ -9,6 +9,9 @@ public class AIFollowPlayer : MonoBehaviour
     public LayerMask groundLayer;
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
+    public int health;
+    public int damage = 5;
+    public float attackDistance = 2;
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -16,13 +19,14 @@ public class AIFollowPlayer : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        rb.freezeRotation = true;
     }
 
     void Update()
     {
         if (player == null)
         {
-            Debug.LogWarning("Player reference is missing!");
+            Debug.Log("no player");
             return;
         }
 
@@ -53,6 +57,9 @@ public class AIFollowPlayer : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+
+        float playerDistance = Vector2.Distance(transform.position, player.position);   
+        if (playerDistance <= attackDistance) { Debug.Log("enemy attacks player"); }
     }
 
     private void OnDrawGizmosSelected()
@@ -65,5 +72,17 @@ public class AIFollowPlayer : MonoBehaviour
             Gizmos.color = Color.green;
             Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
         }
+    }
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        DamageDealer damageDealer = collision.GetComponent<DamageDealer>();
+        ProcessHit(damageDealer);
+    }
+
+    void ProcessHit(DamageDealer damageDealer)
+    {
+        health -= damageDealer.GetDamage();
+        if (health <= 0) { Debug.Log("Enemy dead"); }
     }
 }

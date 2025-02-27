@@ -4,7 +4,7 @@ using System.Collections;
 public class PlayerController : MonoBehaviour
 {
     public float moveSpeed = 5f;
-    public float jumpForce = 10f;
+    public float jumpForce = 8f;
     public float fastFallGravityScale = 4f;
     public float coyoteTime = 0.1f;
     public Transform groundCheck;
@@ -20,17 +20,21 @@ public class PlayerController : MonoBehaviour
     private float dashCooldownTimer = 0f;
     public float attackCooldown = 1f;
     private float attackCooldownTimer = 0f;
-    public float attackDuration = 0.2f;
+    public float attackDuration = 0.05f;
+    public int health;
+
     private bool isAttacking = false;
     private Rigidbody2D rb;
     private bool isGrounded;
     private float coyoteTimeCounter;
     private float defaultGravityScale;
     private bool isFacingRight = true;
+    private Collider2D coli;
 
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        coli = GetComponent<Collider2D>();
         defaultGravityScale = rb.gravityScale;
         rb.freezeRotation = true;
     }
@@ -40,6 +44,10 @@ public class PlayerController : MonoBehaviour
         if (!isAttacking)
         {
             Move();
+        }
+        else if (isAttacking)
+        {
+            rb.velocity = new Vector2(0, 0);
         }
 
         if (isGrounded)
@@ -136,7 +144,7 @@ public class PlayerController : MonoBehaviour
         }
         else
         {
-            Debug.LogWarning("Attack prefab is missing a Collider2D component.");
+            Debug.Log("no collider");
         }
 
         AttackBehavior attackBehavior = attack.GetComponent<AttackBehavior>();
@@ -171,20 +179,35 @@ public class PlayerController : MonoBehaviour
         isDashing = true;
         hasIFrames = true;
         rb.velocity = new Vector2((isFacingRight ? 1 : -1) * dashForce, 0);
+        coli.enabled = false;
 
         yield return new WaitForSeconds(dashDuration);
 
+        coli.enabled = true;
         rb.velocity = Vector2.zero;
         isDashing = false;
         hasIFrames = false;
 
         dashCooldownTimer = dashCooldown;
     }
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        DamageDealer damageDealer = collision.GetComponent<DamageDealer>();
+        ProcessHit(damageDealer);
+    }
+
+    void ProcessHit(DamageDealer damageDealer)
+    {
+        health -= damageDealer.GetDamage();
+        if (health <= 0) { Debug.Log("Player dead"); }
+    }
+
 }
 
 public class AttackBehavior : MonoBehaviour
 {
-    public float lifetime = 0.5f;
+    public float lifetime = 0.1f;
+    public int damage = 10;
 
     void Start()
     {
@@ -195,7 +218,7 @@ public class AttackBehavior : MonoBehaviour
     {
         if (collision.CompareTag("Enemy"))
         {
-            Debug.Log("Enemy hit!");
+            Debug.Log("enemy hit by player");
         }
     }
 }
