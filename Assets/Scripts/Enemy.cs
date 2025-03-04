@@ -11,10 +11,17 @@ public class AIFollowPlayer : MonoBehaviour
     public float groundCheckRadius = 0.2f;
     public int health;
     public int damage = 5;
-    public float attackDistance = 2;
+    public float attackDistance = 2f;
+    public GameObject attackPrefab;
+    public float attackCooldown = 1f;
+    public float attackLifetime = 0.5f;
+    public float attackChanceIncreaseRate = 5f; // Reduced from 10f
 
     private Rigidbody2D rb;
     private bool isGrounded;
+    private bool canAttack = true;
+    private float attackChance = 0f;
+    private Vector3 lastPlayerPosition;
 
     void Start()
     {
@@ -26,21 +33,44 @@ public class AIFollowPlayer : MonoBehaviour
     {
         if (player == null)
         {
-            Debug.Log("no player");
+            Debug.Log("No player");
             return;
         }
 
         float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+
         if (distanceToPlayer <= detectionRange)
         {
-            FollowPlayer();
+            if (distanceToPlayer <= attackDistance)
+            {
+                rb.velocity = Vector2.zero;
+
+                if (player.position != lastPlayerPosition)
+                {
+                    lastPlayerPosition = player.position;
+                    attackChance = 0f;
+                }
+
+                attackChance = Mathf.Clamp(attackChance + attackChanceIncreaseRate * Time.deltaTime, 0f, 100f);
+
+                if (canAttack && Random.Range(0f, 100f) < attackChance)
+                {
+                    Attack();
+                }
+            }
+            else
+            {
+                FollowPlayer();
+            }
         }
     }
 
     void FollowPlayer()
     {
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
+        if (!canAttack)
+            return;
 
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
         float direction = Mathf.Sign(player.position.x - transform.position.x);
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
 
@@ -57,9 +87,39 @@ public class AIFollowPlayer : MonoBehaviour
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+    }
 
-        float playerDistance = Vector2.Distance(transform.position, player.position);   
-        if (playerDistance <= attackDistance) { Debug.Log("enemy attacks player"); }
+    void Attack()
+    {
+        canAttack = false;
+        rb.velocity = Vector2.zero;
+
+        Vector3 attackDirection = GetAttackDirection();
+        Vector3 spawnPosition = transform.position + attackDirection;
+
+        GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
+        Destroy(attack, attackLifetime);
+
+        attackChance = 0f;
+        Invoke(nameof(ResetAttack), attackCooldown);
+    }
+
+    Vector3 GetAttackDirection()
+    {
+        Vector3 toPlayer = player.position - transform.position;
+        if (Mathf.Abs(toPlayer.x) > Mathf.Abs(toPlayer.y))
+        {
+            return toPlayer.x > 0 ? Vector3.right : Vector3.left;
+        }
+        else
+        {
+            return toPlayer.y > 0 ? Vector3.up : Vector3.down;
+        }
+    }
+
+    void ResetAttack()
+    {
+        canAttack = true;
     }
 
     private void OnDrawGizmosSelected()
