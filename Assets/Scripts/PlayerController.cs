@@ -17,19 +17,19 @@ public class PlayerController : MonoBehaviour
     public float dashCooldown = 1f;
     public bool isDashing = false;
     public bool hasIFrames = false;
-    private float dashCooldownTimer = 0f;
+    float dashCooldownTimer = 0f;
     public float attackCooldown = 1f;
-    private float attackCooldownTimer = 0f;
+    float attackCooldownTimer = 0f;
     public float attackDuration = 0.05f;
     public int health;
 
-    private bool isAttacking = false;
-    private Rigidbody2D rb;
-    private bool isGrounded;
-    private float coyoteTimeCounter;
-    private float defaultGravityScale;
-    private bool isFacingRight = true;
-    private Collider2D coli;
+    bool isAttacking = false;
+    Rigidbody2D rb;
+    bool isGrounded;
+    float coyoteTimeCounter;
+    float defaultGravityScale;
+    bool isFacingRight = true;
+    Collider2D coli;
 
     void Start()
     {
@@ -212,13 +212,5 @@ public class AttackBehavior : MonoBehaviour
     void Start()
     {
         Destroy(gameObject, lifetime);
-    }
-
-    void OnTriggerEnter2D(Collider2D collision)
-    {
-        if (collision.CompareTag("Enemy"))
-        {
-            Debug.Log("enemy hit by player");
-        }
     }
 }

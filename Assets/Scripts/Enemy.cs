@@ -1,8 +1,8 @@
 using UnityEngine;
 
-public class AIFollowPlayer : MonoBehaviour
+public class Enemy : MonoBehaviour
 {
-    public Transform player;
+    public GameObject player;
     public float moveSpeed = 3f;
     public float jumpForce = 7f;
     public float detectionRange = 10f;
@@ -15,13 +15,13 @@ public class AIFollowPlayer : MonoBehaviour
     public GameObject attackPrefab;
     public float attackCooldown = 1f;
     public float attackLifetime = 0.5f;
-    public float attackChanceIncreaseRate = 5f; // Reduced from 10f
+    public float attackChanceIncreaseRate = 7.5f;
 
-    private Rigidbody2D rb;
-    private bool isGrounded;
-    private bool canAttack = true;
-    private float attackChance = 0f;
-    private Vector3 lastPlayerPosition;
+    Rigidbody2D rb;
+    bool isGrounded;
+    bool canAttack = true;
+    float attackChance = 0f;
+    Vector3 lastPlayerPosition;
 
     void Start()
     {
@@ -31,13 +31,7 @@ public class AIFollowPlayer : MonoBehaviour
 
     void Update()
     {
-        if (player == null)
-        {
-            Debug.Log("No player");
-            return;
-        }
-
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
 
         if (distanceToPlayer <= detectionRange)
         {
@@ -45,9 +39,9 @@ public class AIFollowPlayer : MonoBehaviour
             {
                 rb.velocity = Vector2.zero;
 
-                if (player.position != lastPlayerPosition)
+                if (player.transform.position != lastPlayerPosition)
                 {
-                    lastPlayerPosition = player.position;
+                    lastPlayerPosition = player.transform.position;
                     attackChance = 0f;
                 }
 
@@ -71,7 +65,7 @@ public class AIFollowPlayer : MonoBehaviour
             return;
 
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        float direction = Mathf.Sign(player.position.x - transform.position.x);
+        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
 
         if (direction > 0)
@@ -83,7 +77,7 @@ public class AIFollowPlayer : MonoBehaviour
             transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
 
-        if (player.position.y > transform.position.y + 1f && isGrounded)
+        if (player.transform.position.y > transform.position.y + 1f && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
@@ -106,7 +100,7 @@ public class AIFollowPlayer : MonoBehaviour
 
     Vector3 GetAttackDirection()
     {
-        Vector3 toPlayer = player.position - transform.position;
+        Vector3 toPlayer = player.transform.position - transform.position;
         if (Mathf.Abs(toPlayer.x) > Mathf.Abs(toPlayer.y))
         {
             return toPlayer.x > 0 ? Vector3.right : Vector3.left;
@@ -143,6 +137,10 @@ public class AIFollowPlayer : MonoBehaviour
     void ProcessHit(DamageDealer damageDealer)
     {
         health -= damageDealer.GetDamage();
-        if (health <= 0) { Debug.Log("Enemy dead"); }
+        if (health <= 0)
+        {
+            FindObjectOfType<EnemySpawnHandler>().EnemyDead();
+            Destroy(gameObject);
+        }
     }
 }
