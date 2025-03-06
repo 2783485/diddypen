@@ -1,26 +1,59 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemySpawnHandler : MonoBehaviour
 {
-    public GameObject enemy;
-    bool enemySpawned;
+    public GameObject enemyPrefab;
+    public Transform spawnPoint;
+    public float postCombatCooldown = 5f;
 
-    private void Update()
+    private GameObject activeEnemy;
+    private bool inPostCombat = false;
+
+    void Update()
     {
-        SpawnEnemy();
-    }
-    public void SpawnEnemy()
-    {
-        if (!enemySpawned)
+        if (Input.GetKeyDown(KeyCode.E))
         {
-            enemySpawned = true;
-            Instantiate(enemy);
+            TrySpawnEnemy();
         }
     }
+
+    void TrySpawnEnemy()
+    {
+        if (inPostCombat)
+        {
+
+            return;
+        }
+
+        if (activeEnemy != null)
+        {
+            return;
+        }
+
+        SpawnEnemy();
+    }
+
+    void SpawnEnemy()
+    {
+        activeEnemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
+        activeEnemy.GetComponent<Enemy>().SetSpawnHandler(this);
+    }
+
     public void EnemyDead()
     {
-        enemySpawned = false;
+        activeEnemy = null;
+        EnterPostCombatState();
+    }
+
+    void EnterPostCombatState()
+    {
+        inPostCombat = true;
+        Invoke(nameof(ExitPostCombatState), postCombatCooldown);
+    }
+
+    void ExitPostCombatState()
+    {
+        inPostCombat = false;
     }
 }
+

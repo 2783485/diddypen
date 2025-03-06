@@ -203,7 +203,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f074c48451e8f7247b5e7943c36f33d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  player: {fileID: 9067510138234579733, guid: dde30dcbd45e40747ae77dc742d03b9f, type: 3}
+  player: {fileID: 1676681369695565826, guid: dde30dcbd45e40747ae77dc742d03b9f, type: 3}
   moveSpeed: 3
   jumpForce: 7
   detectionRange: 10

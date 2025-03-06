@@ -2,35 +2,42 @@ using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    public GameObject player;
+    Transform player;
     public float moveSpeed = 3f;
     public float jumpForce = 7f;
     public float detectionRange = 10f;
     public LayerMask groundLayer;
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
-    public int health;
+    public int health = 100;
     public int damage = 5;
     public float attackDistance = 2f;
     public GameObject attackPrefab;
     public float attackCooldown = 1f;
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
+    public int minGoldDrop = 5;
+    public int maxGoldDrop = 20;
+    public EnemySpawnHandler spawnHandler;
 
     Rigidbody2D rb;
     bool isGrounded;
     bool canAttack = true;
     float attackChance = 0f;
     Vector3 lastPlayerPosition;
+    public bool isDead = false;
 
     void Start()
     {
+        player = GameObject.FindGameObjectWithTag("Player").transform;
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
     }
 
     void Update()
     {
+        if (isDead) return;
+
         float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
 
         if (distanceToPlayer <= detectionRange)
@@ -61,8 +68,7 @@ public class Enemy : MonoBehaviour
 
     void FollowPlayer()
     {
-        if (!canAttack)
-            return;
+        if (!canAttack) return;
 
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
         float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
@@ -116,6 +122,36 @@ public class Enemy : MonoBehaviour
         canAttack = true;
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        DamageDealer damageDealer = collision.GetComponent<DamageDealer>();
+        ProcessHit(damageDealer);
+    }
+
+    void ProcessHit(DamageDealer damageDealer)
+    {
+        if (isDead) return;
+
+        health -= damageDealer.GetDamage();
+
+        if (health <= 0)
+        {
+            Die();
+        }
+    }
+
+    void Die()
+    {
+        isDead = true;
+
+        int goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
+        Debug.Log($"Gold Dropped: {goldDrop}");
+
+        GameManager.Instance.TriggerLevelUpScreen();
+
+        Destroy(gameObject, 1f);
+    }
+
     private void OnDrawGizmosSelected()
     {
         Gizmos.color = Color.red;
@@ -128,19 +164,9 @@ public class Enemy : MonoBehaviour
         }
     }
 
-    private void OnTriggerEnter2D(Collider2D collision)
+    public void SetSpawnHandler(EnemySpawnHandler handler)
     {
-        DamageDealer damageDealer = collision.GetComponent<DamageDealer>();
-        ProcessHit(damageDealer);
-    }
-
-    void ProcessHit(DamageDealer damageDealer)
-    {
-        health -= damageDealer.GetDamage();
-        if (health <= 0)
-        {
-            FindObjectOfType<EnemySpawnHandler>().EnemyDead();
-            Destroy(gameObject);
-        }
+        spawnHandler = handler;
     }
 }
+
