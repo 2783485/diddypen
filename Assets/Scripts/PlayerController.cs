@@ -9,6 +9,8 @@ public class PlayerController : MonoBehaviour
     public float coyoteTime = 0.1f;
     public Transform groundCheck;
     public LayerMask groundLayer;
+    public LayerMask enemtAttackLayer;
+    public LayerMask enemyLayer;
     public float groundCheckRadius = 0.2f;
     public GameObject attackPrefab;
     public float attackOffset = 1f;
@@ -22,6 +24,10 @@ public class PlayerController : MonoBehaviour
     float attackCooldownTimer = 0f;
     public float attackDuration = 0.05f;
     public int health;
+    public int maxHealth;
+    public int strength;
+    public int intelligence;
+    public int vitality;
 
     bool isAttacking = false;
     Rigidbody2D rb;
@@ -36,7 +42,9 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         coli = GetComponent<Collider2D>();
         defaultGravityScale = rb.gravityScale;
-        rb.freezeRotation = true;
+        rb.freezeRotation = true;;
+        maxHealth = 20 + vitality * 5;
+        health = maxHealth;
     }
 
     void Update()
@@ -114,7 +122,18 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         coyoteTimeCounter = 0;
     }
-
+    public void AddStrength()
+    {
+        strength++;
+    }
+    public void AddIntelligence()
+    {
+        intelligence++;
+    }
+    public void AddVitality()
+    {
+        vitality++; 
+    }
     void Attack()
     {
         Vector3 spawnPosition;

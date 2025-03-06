@@ -16,8 +16,8 @@ public class Enemy : MonoBehaviour
     public float attackCooldown = 1f;
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
-    public int minGoldDrop = 5;
-    public int maxGoldDrop = 20;
+    public int minGoldDrop = 15;
+    public int maxGoldDrop = 25;
     public EnemySpawnHandler spawnHandler;
 
     Rigidbody2D rb;
@@ -26,10 +26,11 @@ public class Enemy : MonoBehaviour
     float attackChance = 0f;
     Vector3 lastPlayerPosition;
     public bool isDead = false;
+    int goldDropped;
 
     void Start()
     {
-        player = GameObject.FindGameObjectWithTag("Player").transform;
+        player = FindObjectOfType<PlayerController>().transform;
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
     }
@@ -143,14 +144,14 @@ public class Enemy : MonoBehaviour
     void Die()
     {
         isDead = true;
-
         int goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
         Debug.Log($"Gold Dropped: {goldDrop}");
-
+        goldDropped = goldDrop;
+        GameManager.Instance.AddGold();
         GameManager.Instance.TriggerLevelUpScreen();
-
-        Destroy(gameObject, 1f);
+        Destroy(gameObject, 0.001f);
     }
+    public int GetGoldDrop() { return goldDropped; }
 
     private void OnDrawGizmosSelected()
     {
