@@ -13,7 +13,7 @@ public class Enemy : MonoBehaviour
     public int damage = 5;
     public float attackDistance = 2f;
     public GameObject attackPrefab;
-    public float attackCooldown = 1f;
+    public float attackCooldown = 0.75f;  // Slightly faster attack
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
     public int minGoldDrop = 15;
@@ -27,6 +27,13 @@ public class Enemy : MonoBehaviour
     Vector3 lastPlayerPosition;
     public bool isDead = false;
     int goldDropped;
+    float nextMoveDecisionTime = 0f;
+    float moveDecisionCooldown = 1f;
+    bool isMoving = false;
+    bool isStrafing = false;
+    float strafeTime = 0f;
+    float strafeCooldown = 1.5f;  // Shorter, less frequent strafes
+    bool isDashing = false;
 
     void Start()
     {
@@ -57,20 +64,63 @@ public class Enemy : MonoBehaviour
 
                 if (canAttack && Random.Range(0f, 100f) < attackChance)
                 {
-                    Attack();
+                    PerformRandomAttack();
                 }
             }
             else
             {
-                FollowPlayer();
+                HandleMovementVariation();
             }
+        }
+    }
+
+    void HandleMovementVariation()
+    {
+        if (Time.time >= nextMoveDecisionTime)
+        {
+            float randomChoice = Random.value;
+
+            if (randomChoice < 0.5f)
+            {
+                isMoving = true;
+                isStrafing = false;
+                isDashing = false;
+            }
+            else if (randomChoice < 0.75f)
+            {
+                isMoving = false;
+                isStrafing = false;
+                isDashing = false;
+            }
+            else if (randomChoice < 0.9f)
+            {
+                isStrafing = true;
+                strafeTime = Time.time + 0.5f;  // Shorter strafe time
+            }
+            else
+            {
+                isDashing = true;
+            }
+
+            nextMoveDecisionTime = Time.time + moveDecisionCooldown;
+        }
+
+        if (isMoving)
+        {
+            FollowPlayer();
+        }
+        else if (isStrafing && Time.time < strafeTime)
+        {
+            Strafe();
+        }
+        else if (isDashing)
+        {
+            Dash();
         }
     }
 
     void FollowPlayer()
     {
-        if (!canAttack) return;
-
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
         float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
@@ -84,25 +134,69 @@ public class Enemy : MonoBehaviour
             transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
         }
 
-        if (player.transform.position.y > transform.position.y + 1f && isGrounded)
+        if (player.transform.position.y > transform.position.y + 1f && isGrounded && Random.value > 0.5f)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
     }
 
-    void Attack()
+    void Strafe()
+    {
+        float direction = Random.value > 0.5f ? 1f : -1f;
+        rb.velocity = new Vector2(direction * moveSpeed * 0.75f, rb.velocity.y);
+    }
+
+    void Dash()
+    {
+        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
+        rb.velocity = new Vector2(direction * moveSpeed * 2.5f, rb.velocity.y);
+        isDashing = false;
+    }
+
+    void PerformRandomAttack()
     {
         canAttack = false;
         rb.velocity = Vector2.zero;
 
-        Vector3 attackDirection = GetAttackDirection();
-        Vector3 spawnPosition = transform.position + attackDirection;
+        int attackType = Random.Range(0, 3);
 
-        GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
-        Destroy(attack, attackLifetime);
+        switch (attackType)
+        {
+            case 0:
+                StandardAttack();
+                break;
+            case 1:
+                JumpAttack();
+                break;
+            case 2:
+                ChargeAttack();
+                break;
+        }
 
         attackChance = 0f;
-        Invoke(nameof(ResetAttack), attackCooldown);
+        Invoke(nameof(ResetAttack), attackCooldown);  // Faster attack cooldown
+    }
+
+    void StandardAttack()
+    {
+        Vector3 attackDirection = GetAttackDirection();
+        Vector3 spawnPosition = transform.position + attackDirection;
+        GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
+        Destroy(attack, attackLifetime);
+    }
+
+    void JumpAttack()
+    {
+        if (isGrounded)
+        {
+            rb.velocity = new Vector2(rb.velocity.x, jumpForce * 1.5f);
+        }
+    }
+
+    void ChargeAttack()
+    {
+        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
+        rb.velocity = new Vector2(direction * moveSpeed * 2, rb.velocity.y);
     }
 
     Vector3 GetAttackDirection()
@@ -132,9 +226,7 @@ public class Enemy : MonoBehaviour
     void ProcessHit(DamageDealer damageDealer)
     {
         if (isDead) return;
-
         health -= damageDealer.GetDamage();
-
         if (health <= 0)
         {
             Die();
@@ -145,25 +237,20 @@ public class Enemy : MonoBehaviour
     {
         isDead = true;
         int goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
-        Debug.Log($"Gold Dropped: {goldDrop}");
+        GameManager.Instance.OnEnemyDeath(goldDrop);
         goldDropped = goldDrop;
-        GameManager.Instance.AddGold();
-        GameManager.Instance.TriggerLevelUpScreen();
+        if (spawnHandler != null)
+        {
+            spawnHandler.hasSpawnedEnemy = false;
+        }
+        FindObjectOfType<GameManager>().AddGold(goldDrop);
+        GetComponent<Collider2D>().enabled = false;
+        GetComponent<SpriteRenderer>().enabled = false;
+        GameManager.Instance.OnEnemyDeath(goldDrop);
         Destroy(gameObject, 0.001f);
     }
+
     public int GetGoldDrop() { return goldDropped; }
-
-    private void OnDrawGizmosSelected()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawWireSphere(transform.position, detectionRange);
-
-        if (groundCheck != null)
-        {
-            Gizmos.color = Color.green;
-            Gizmos.DrawWireSphere(groundCheck.position, groundCheckRadius);
-        }
-    }
 
     public void SetSpawnHandler(EnemySpawnHandler handler)
     {

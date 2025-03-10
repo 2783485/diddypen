@@ -5,7 +5,7 @@ public class EnemySpawnHandler : MonoBehaviour
     public GameObject enemyPrefab;
     public Transform spawnPoint;
     public float postCombatCooldown = 5f;
-
+    public bool hasSpawnedEnemy = false;
     private GameObject activeEnemy;
     private bool inPostCombat = false;
 
@@ -33,10 +33,13 @@ public class EnemySpawnHandler : MonoBehaviour
         SpawnEnemy();
     }
 
-    void SpawnEnemy()
+    public void SpawnEnemy()
     {
-        activeEnemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
-        activeEnemy.GetComponent<Enemy>().SetSpawnHandler(this);
+        if (hasSpawnedEnemy) return; 
+
+        GameObject newEnemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
+        newEnemy.GetComponent<Enemy>().SetSpawnHandler(this); 
+        hasSpawnedEnemy = true;
     }
 
     public void EnemyDead()
