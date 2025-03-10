@@ -237,13 +237,11 @@ public class Enemy : MonoBehaviour
     {
         isDead = true;
         int goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
-        GameManager.Instance.OnEnemyDeath(goldDrop);
         goldDropped = goldDrop;
         if (spawnHandler != null)
         {
             spawnHandler.hasSpawnedEnemy = false;
         }
-        FindObjectOfType<GameManager>().AddGold(goldDrop);
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
         GameManager.Instance.OnEnemyDeath(goldDrop);

@@ -9,15 +9,15 @@ public class GameManager : MonoBehaviour
     public int gold;
     public int goldNeededForLevelUp = 20;
 
-    private int combatPhase = 0;
-    private bool isPostCombat = false;
+    public int combatPhase = 0;
+    public bool isPostCombat = false;
     public enum CombatPhase { Combat, PostCombat }
     public CombatPhase currentPhase = CombatPhase.Combat;
 
-    private int workerCount = 0;
-    private int workerHireCost = 10;
-    private int maxExpeditions = 3;
-    private List<Expedition> activeExpeditions = new List<Expedition>();
+    public int workerCount = 0;
+    public int workerHireCost = 10;
+    public int maxExpeditions = 3;
+    public List<Expedition> activeExpeditions = new List<Expedition>();
 
     void Awake()
     {
@@ -30,12 +30,6 @@ public class GameManager : MonoBehaviour
             Destroy(gameObject);
         }
     }
-
-    private void Update()
-    {
-        Debug.Log("Gold: " + gold + " | Combat Phase: " + combatPhase);
-    }
-
     public void AddGold(int amount)
     {
         gold += amount;
@@ -75,12 +69,15 @@ public class GameManager : MonoBehaviour
     public void OnEnemyDeath(int goldDrop)
     {
         AddGold(goldDrop);
-        TriggerLevelUpScreen();
         isPostCombat = true;
         gold += goldDrop;
-        TriggerLevelUpScreen();
         currentPhase = CombatPhase.PostCombat; 
+        CheckExpeditions();
         Debug.Log("Combat phase ended. Entering post-combat state.");
+    }
+    public int GetWorkers()
+    {
+        return workerCount;
     }
     public void StartNewCombatPhase()
     {
