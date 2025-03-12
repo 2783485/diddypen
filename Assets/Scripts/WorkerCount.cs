@@ -14,6 +14,6 @@ public class WorkerCount : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetComponent<TextMeshProUGUI>().text = "Workers: " + FindObjectOfType<GameManager>().GetWorkers().ToString();
+        //GetComponent<TextMeshProUGUI>().text = "Workers: " + FindObjectOfType<ExpeditionManager>().GetTotalWorkers().ToString();
     }
 }

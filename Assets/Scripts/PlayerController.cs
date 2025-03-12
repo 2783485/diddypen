@@ -28,6 +28,7 @@ public class PlayerController : MonoBehaviour
     public int strength;
     public int intelligence;
     public int vitality;
+    bool healthFixed;
 
     bool isAttacking = false;
     Rigidbody2D rb;
@@ -44,7 +45,7 @@ public class PlayerController : MonoBehaviour
         defaultGravityScale = rb.gravityScale;
         rb.freezeRotation = true;;
         maxHealth = 20 + vitality * 5;
-        health = maxHealth;
+        FixHealth();
     }
 
     void Update()
@@ -116,7 +117,11 @@ public class PlayerController : MonoBehaviour
             Flip();
         }
     }
-
+    public void FixHealth()
+    {
+        health = maxHealth;
+        healthFixed = true;
+    } 
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -217,7 +222,7 @@ public class PlayerController : MonoBehaviour
 
     void ProcessHit(DamageDealer damageDealer)
     {
-        health -= damageDealer.GetDamage();
+        health -= damageDealer.GetDamage() - strength * 2; 
         if (health <= 0) { Debug.Log("Player dead"); }
     }
 
@@ -226,7 +231,6 @@ public class PlayerController : MonoBehaviour
 public class AttackBehavior : MonoBehaviour
 {
     public float lifetime = 0.1f;
-    public int damage = 10;
 
     void Start()
     {

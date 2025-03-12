@@ -16,7 +16,7 @@ public class LevelUpUIManager : MonoBehaviour
         expeditionMenu.SetActive(false);
         levelUpScreen.SetActive(false);
         continueButton.onClick.AddListener(HideLevelUpScreen);
-        expeditionButton.onClick.AddListener(() => GameManager.Instance.StartExpedition(3, 2));
+        //expeditionButton.onClick.AddListener(() => GameManager.Instance.StartExpedition(3, 2));
     }
     public void ShowLevelUpScreen()
     {

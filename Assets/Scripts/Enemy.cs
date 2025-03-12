@@ -28,7 +28,7 @@ public class Enemy : MonoBehaviour
     public bool isDead = false;
     int goldDropped;
     float nextMoveDecisionTime = 0f;
-    float moveDecisionCooldown = 1f;
+    float moveDecisionCooldown = 0.5f;
     bool isMoving = false;
     bool isStrafing = false;
     float strafeTime = 0f;
