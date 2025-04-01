@@ -13,7 +13,7 @@ public class Enemy : MonoBehaviour
     public int damage = 5;
     public float attackDistance = 2f;
     public GameObject attackPrefab;
-    public float attackCooldown = 0.75f;  // Slightly faster attack
+    public float attackCooldown = 0.75f;
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
     public int minGoldDrop = 15;
@@ -26,13 +26,13 @@ public class Enemy : MonoBehaviour
     float attackChance = 0f;
     Vector3 lastPlayerPosition;
     public bool isDead = false;
-    int goldDropped;
+    int goldDrop;
     float nextMoveDecisionTime = 0f;
     float moveDecisionCooldown = 0.5f;
     bool isMoving = false;
     bool isStrafing = false;
     float strafeTime = 0f;
-    float strafeCooldown = 1.5f;  // Shorter, less frequent strafes
+    float strafeCooldown = 1.5f;
     bool isDashing = false;
 
     void Start()
@@ -95,7 +95,7 @@ public class Enemy : MonoBehaviour
             else if (randomChoice < 0.9f)
             {
                 isStrafing = true;
-                strafeTime = Time.time + 0.5f;  // Shorter strafe time
+                strafeTime = Time.time + 0.5f;  
             }
             else
             {
@@ -174,7 +174,7 @@ public class Enemy : MonoBehaviour
         }
 
         attackChance = 0f;
-        Invoke(nameof(ResetAttack), attackCooldown);  // Faster attack cooldown
+        Invoke(nameof(ResetAttack), attackCooldown);  
     }
 
     void StandardAttack()
@@ -232,24 +232,23 @@ public class Enemy : MonoBehaviour
             Die();
         }
     }
-
     void Die()
     {
         isDead = true;
-        int goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
-        goldDropped = goldDrop;
         if (spawnHandler != null)
         {
             spawnHandler.hasSpawnedEnemy = false;
         }
+        goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
-        GameManager.Instance.OnEnemyDeath(goldDrop);
+        FindObjectOfType<GoldManager>().AddGold();
         Destroy(gameObject, 0.001f);
     }
-
-    public int GetGoldDrop() { return goldDropped; }
-
+    public int GetGoldDropped()
+    {
+        return goldDrop;    
+    }
     public void SetSpawnHandler(EnemySpawnHandler handler)
     {
         spawnHandler = handler;
