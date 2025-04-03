@@ -26,8 +26,9 @@ public class PlayerController : MonoBehaviour
     public int health;
     public int maxHealth;
     public int strength;
-    public int intelligence;
+    public int arcana;
     public int vitality;
+    public float agility;
     bool healthFixed;
 
     bool isAttacking = false;
@@ -131,14 +132,22 @@ public class PlayerController : MonoBehaviour
     {
         strength++;
     }
-    public void AddIntelligence()
+    public void AddArcana()
     {
-        intelligence++;
+        arcana++;
+    }
+    public void AddAgility()
+    {
+        agility++;
     }
     public void AddVitality()
     {
         vitality++; 
     }
+    public int GetStrength() { return strength; }
+    public int GetArcana() { return arcana; }   
+    public float GetAgility() { return agility; }
+    public int GetVigor() { return vitality; }
     void Attack()
     {
         Vector3 spawnPosition;

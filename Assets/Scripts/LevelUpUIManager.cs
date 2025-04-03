@@ -7,7 +7,7 @@ public class LevelUpUIManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        HideLevelUpUI();
     }
 
     // Update is called once per frame
@@ -22,5 +22,21 @@ public class LevelUpUIManager : MonoBehaviour
     public void ShowLevelUpUI()
     {
         gameObject.SetActive(true);
+    }
+    public void LevelUpStrength()
+    {
+        FindObjectOfType<PlayerController>().AddStrength();
+    }
+    public void LevelUpArcana()
+    {
+        FindObjectOfType<PlayerController>().AddArcana();
+    }
+    public void LevelUpAgility()
+    {
+        FindObjectOfType<PlayerController>().AddAgility();
+    }
+    public void LevelUpVigor()
+    {
+        FindObjectOfType<PlayerController>().AddVitality();
     }
 }
