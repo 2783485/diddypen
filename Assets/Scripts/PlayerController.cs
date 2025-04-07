@@ -3,6 +3,7 @@ using System.Collections;
 
 public class PlayerController : MonoBehaviour
 {
+    public int playerLevel;
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
     public float fastFallGravityScale = 4f;
@@ -30,6 +31,7 @@ public class PlayerController : MonoBehaviour
     public int vitality;
     public float agility;
     bool healthFixed;
+    public int levelUpCost;
 
     bool isAttacking = false;
     Rigidbody2D rb;
@@ -44,13 +46,15 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         coli = GetComponent<Collider2D>();
         defaultGravityScale = rb.gravityScale;
-        rb.freezeRotation = true;;
-        maxHealth = 20 + vitality * 5;
+        rb.freezeRotation = true; ;
+        maxHealth = 10 + vitality * 5;
+        levelUpCost = 20 + playerLevel * 10;
         FixHealth();
     }
 
     void Update()
     {
+        levelUpCost = 20 + playerLevel * 10;
         if (!isAttacking)
         {
             Move();
@@ -122,7 +126,7 @@ public class PlayerController : MonoBehaviour
     {
         health = maxHealth;
         healthFixed = true;
-    } 
+    }
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
@@ -130,24 +134,46 @@ public class PlayerController : MonoBehaviour
     }
     public void AddStrength()
     {
-        strength++;
+        if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
+        {
+            strength++;
+            FindObjectOfType<GoldManager>().RemoveGold(levelUpCost);
+            LevelUp();
+        }
     }
     public void AddArcana()
     {
-        arcana++;
+        if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
+        {
+            arcana++;
+            FindObjectOfType<GoldManager>().RemoveGold(levelUpCost);
+            LevelUp();
+        }
     }
     public void AddAgility()
     {
-        agility++;
+        if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
+        {
+            agility++;
+            FindObjectOfType<GoldManager>().RemoveGold(levelUpCost);
+            LevelUp();
+        }
     }
     public void AddVitality()
     {
-        vitality++; 
+        if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
+        {
+            vitality++;
+            FindObjectOfType<GoldManager>().RemoveGold(levelUpCost);
+            LevelUp();
+        }
     }
+    public int GetPlayerLevel() { return playerLevel; }
     public int GetStrength() { return strength; }
-    public int GetArcana() { return arcana; }   
+    public int GetArcana() { return arcana; }
     public float GetAgility() { return agility; }
     public int GetVigor() { return vitality; }
+    public int GetLevelUpCost() { return levelUpCost; }
     void Attack()
     {
         Vector3 spawnPosition;
@@ -231,8 +257,12 @@ public class PlayerController : MonoBehaviour
 
     void ProcessHit(DamageDealer damageDealer)
     {
-        health -= damageDealer.GetDamage() - strength * 2; 
+        health -= damageDealer.GetDamage() - strength * 2;
         if (health <= 0) { Debug.Log("Player dead"); }
+    }
+    public void LevelUp()
+    {
+        playerLevel++;
     }
 
 }

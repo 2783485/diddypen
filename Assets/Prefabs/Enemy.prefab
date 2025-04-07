@@ -203,21 +203,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f074c48451e8f7247b5e7943c36f33d2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 5
-  jumpForce: 8
-  detectionRange: 16
+  moveSpeed: 6
+  jumpForce: 10
+  detectionRange: 20
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   groundCheck: {fileID: 328656284330733764}
   groundCheckRadius: 0.2
-  health: 25
+  health: 100
   damage: 0
   attackDistance: 2
   attackPrefab: {fileID: 3696419074719722056, guid: 796137503131c074da41b71ee1a0533e, type: 3}
-  attackCooldown: 0.5
-  attackLifetime: 0.1
-  attackChanceIncreaseRate: 10
+  attackCooldown: 1
+  attackLifetime: 0.2
+  attackChanceIncreaseRate: 25
   minGoldDrop: 14
   maxGoldDrop: 25
   spawnHandler: {fileID: 0}

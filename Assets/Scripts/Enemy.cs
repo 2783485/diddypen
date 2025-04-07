@@ -28,11 +28,11 @@ public class Enemy : MonoBehaviour
     public bool isDead = false;
     int goldDrop;
     float nextMoveDecisionTime = 0f;
-    float moveDecisionCooldown = 0.5f;
+    float moveDecisionCooldown = 2f;
     bool isMoving = false;
     bool isStrafing = false;
-    float strafeTime = 0f;
-    float strafeCooldown = 1.5f;
+    float strafeTime = 1f;
+    float strafeCooldown = 5f;
     bool isDashing = false;
 
     void Start()
@@ -90,7 +90,7 @@ public class Enemy : MonoBehaviour
             {
                 isMoving = false;
                 isStrafing = false;
-                isDashing = false;
+                isDashing = true;
             }
             else if (randomChoice < 0.9f)
             {
@@ -242,7 +242,7 @@ public class Enemy : MonoBehaviour
         goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
-        FindObjectOfType<GoldManager>().AddGold();
+        FindObjectOfType<GoldManager>().AddGold(goldDrop);
         Destroy(gameObject, 0.001f);
     }
     public int GetGoldDropped()

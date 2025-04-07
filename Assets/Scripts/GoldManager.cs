@@ -13,9 +13,13 @@ public class GoldManager : MonoBehaviour
     {
         GetGold();
     }
-    public void AddGold()
+    public void AddGold(int amount)
     {
-        gold += FindObjectOfType<Enemy>().GetGoldDropped();
+        gold += amount;
+    }
+    public void RemoveGold(int amountLost)
+    {
+        gold -= amountLost;
     }
     public int GetGold()
     {

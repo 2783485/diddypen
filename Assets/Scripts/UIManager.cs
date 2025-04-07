@@ -5,6 +5,7 @@ using UnityEngine;
 public class UIManager : MonoBehaviour
 {
     public GameObject levelUpPanel;
+    public GameObject expeditionPanel;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,5 +24,13 @@ public class UIManager : MonoBehaviour
     public void HideLevelUpPanel()
     {
         levelUpPanel.SetActive(false);
+    }
+    public void ShowExpeditionPanel()
+    {
+        expeditionPanel.SetActive(true);
+    }
+    public void HideExpeditionPanel()
+    {
+        expeditionPanel.SetActive(false);
     }
 }
