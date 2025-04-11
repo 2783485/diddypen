@@ -243,6 +243,7 @@ public class Enemy : MonoBehaviour
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
         FindObjectOfType<GoldManager>().AddGold(goldDrop);
+        FindObjectOfType<ExpeditionManager>().AddRoundPassed();
         Destroy(gameObject, 0.001f);
     }
     public int GetGoldDropped()
