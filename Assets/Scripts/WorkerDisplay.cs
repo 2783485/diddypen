@@ -1,16 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using TMPro;
 
-public class InventoryManager : MonoBehaviour
+public class WorkerDisplay : MonoBehaviour
 {
-    public int mushrooms;
-    public int arcanaOrb;
-    public int emptyBottles;
-    public int healthPot;
-    public int projectileSkill;
-    public int skillBuffPot;
-
     // Start is called before the first frame update
     void Start()
     {
@@ -20,6 +14,6 @@ public class InventoryManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        GetComponent<TextMeshProUGUI>().text = FindObjectOfType<ExpeditionManager>().workers.ToString();
     }
 }
