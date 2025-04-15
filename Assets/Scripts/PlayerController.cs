@@ -10,10 +10,11 @@ public class PlayerController : MonoBehaviour
     public float coyoteTime = 0.1f;
     public Transform groundCheck;
     public LayerMask groundLayer;
-    public LayerMask enemtAttackLayer;
+    public LayerMask enemyAttackLayer;
     public LayerMask enemyLayer;
     public float groundCheckRadius = 0.2f;
     public GameObject attackPrefab;
+    public GameObject arcaneProjectilePrefab;
     public float attackOffset = 1f;
     public float dashForce = 20f;
     public float dashDuration = 0.2f;
@@ -46,7 +47,7 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         coli = GetComponent<Collider2D>();
         defaultGravityScale = rb.gravityScale;
-        rb.freezeRotation = true; ;
+        rb.freezeRotation = true;
         maxHealth = 10 + vitality * 5;
         levelUpCost = 20 + playerLevel * 10;
         FixHealth();
@@ -56,13 +57,11 @@ public class PlayerController : MonoBehaviour
     {
         levelUpCost = 20 + playerLevel * 10;
         if (!isAttacking)
-        {
             Move();
-        }
         else if (isAttacking)
-        {
-            rb.velocity = new Vector2(0, 0);
-        }
+            rb.velocity = Vector2.zero;
+
+        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
         if (isGrounded)
         {
@@ -73,37 +72,29 @@ public class PlayerController : MonoBehaviour
         {
             coyoteTimeCounter -= Time.deltaTime;
             if (rb.velocity.y <= 0)
-            {
                 rb.gravityScale = fastFallGravityScale;
-            }
         }
 
         if (Input.GetButtonDown("Jump") && coyoteTimeCounter > 0)
-        {
             Jump();
-        }
 
         if (attackCooldownTimer > 0)
-        {
             attackCooldownTimer -= Time.deltaTime;
-        }
+
         if (Input.GetButtonDown("Fire1") && attackCooldownTimer <= 0)
         {
             Attack();
             attackCooldownTimer = 1f / attackCooldown;
         }
 
-        if (Input.GetButtonDown("Fire2") && dashCooldownTimer <= 0)
-        {
+        if (Input.GetKeyDown(KeyCode.Mouse1))
+            Fire();
+
+        if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
             StartCoroutine(Dash());
-        }
 
         if (dashCooldownTimer > 0)
-        {
             dashCooldownTimer -= Time.deltaTime;
-        }
-
-        isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
     }
 
     void Move()
@@ -114,24 +105,43 @@ public class PlayerController : MonoBehaviour
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
         if (moveInput > 0 && !isFacingRight)
-        {
             Flip();
-        }
         else if (moveInput < 0 && isFacingRight)
-        {
             Flip();
-        }
     }
+
+    void Fire()
+    {
+        Vector3 spawnPosition = transform.position;
+        if (isFacingRight)
+            spawnPosition += Vector3.right * 0.5f;
+        else
+            spawnPosition += Vector3.left * 0.5f;
+
+        GameObject projectile = Instantiate(arcaneProjectilePrefab, spawnPosition, isFacingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0));
+        ArcaneProjectile projectileComponent = projectile.GetComponent<ArcaneProjectile>();
+
+        if (projectileComponent != null)
+        {
+            projectileComponent.SetDirection(isFacingRight);
+            projectileComponent.damage = arcana * 5;
+        }
+        else
+            Debug.LogError("ArcaneProjectile script not found on the projectile prefab!");
+    }
+
     public void FixHealth()
     {
         health = maxHealth;
         healthFixed = true;
     }
+
     void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         coyoteTimeCounter = 0;
     }
+
     public void AddStrength()
     {
         if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
@@ -141,6 +151,7 @@ public class PlayerController : MonoBehaviour
             LevelUp();
         }
     }
+
     public void AddArcana()
     {
         if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
@@ -150,6 +161,7 @@ public class PlayerController : MonoBehaviour
             LevelUp();
         }
     }
+
     public void AddAgility()
     {
         if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
@@ -159,6 +171,7 @@ public class PlayerController : MonoBehaviour
             LevelUp();
         }
     }
+
     public void AddVitality()
     {
         if (FindObjectOfType<GoldManager>().gold >= levelUpCost)
@@ -168,12 +181,14 @@ public class PlayerController : MonoBehaviour
             LevelUp();
         }
     }
-    public int GetPlayerLevel() { return playerLevel; }
-    public int GetStrength() { return strength; }
-    public int GetArcana() { return arcana; }
-    public float GetAgility() { return agility; }
-    public int GetVigor() { return vitality; }
-    public int GetLevelUpCost() { return levelUpCost; }
+
+    public int GetPlayerLevel() => playerLevel;
+    public int GetStrength() => strength;
+    public int GetArcana() => arcana;
+    public float GetAgility() => agility;
+    public int GetVigor() => vitality;
+    public int GetLevelUpCost() => levelUpCost;
+
     void Attack()
     {
         Vector3 spawnPosition;
@@ -182,40 +197,26 @@ public class PlayerController : MonoBehaviour
         bool isAirborne = !isGrounded;
 
         if (holdingUp)
-        {
             spawnPosition = transform.position + Vector3.up * attackOffset;
-        }
         else if (holdingDown && isAirborne)
-        {
             spawnPosition = transform.position + Vector3.down * attackOffset;
-        }
         else
-        {
             spawnPosition = transform.position + (isFacingRight ? Vector3.right : Vector3.left) * attackOffset;
-        }
 
         GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
 
         Collider2D attackCollider = attack.GetComponent<Collider2D>();
         if (attackCollider != null)
-        {
             attackCollider.isTrigger = true;
-        }
         else
-        {
             Debug.Log("no collider");
-        }
 
         AttackBehavior attackBehavior = attack.GetComponent<AttackBehavior>();
         if (attackBehavior == null)
-        {
             attackBehavior = attack.AddComponent<AttackBehavior>();
-        }
 
         if (isGrounded)
-        {
             StartCoroutine(AttackLock());
-        }
     }
 
     IEnumerator AttackLock()
@@ -238,17 +239,17 @@ public class PlayerController : MonoBehaviour
         isDashing = true;
         hasIFrames = true;
         rb.velocity = new Vector2((isFacingRight ? 1 : -1) * dashForce, 0);
-        coli.enabled = false;
-
+        int originalLayerMask = gameObject.layer;
+        gameObject.layer = LayerMask.NameToLayer("IgnoreCollision");
         yield return new WaitForSeconds(dashDuration);
-
-        coli.enabled = true;
+        gameObject.layer = originalLayerMask;
         rb.velocity = Vector2.zero;
         isDashing = false;
         hasIFrames = false;
 
         dashCooldownTimer = dashCooldown;
     }
+
     private void OnTriggerEnter2D(Collider2D collision)
     {
         DamageDealer damageDealer = collision.GetComponent<DamageDealer>();
@@ -257,14 +258,18 @@ public class PlayerController : MonoBehaviour
 
     void ProcessHit(DamageDealer damageDealer)
     {
-        health -= damageDealer.GetDamage() - strength * 2;
-        if (health <= 0) { Debug.Log("Player dead"); }
+        if (!hasIFrames)
+        {
+            health -= damageDealer.GetDamage() - strength * 2;
+            if (health <= 0)
+                Debug.Log("Player dead");
+        }
     }
+
     public void LevelUp()
     {
         playerLevel++;
     }
-
 }
 
 public class AttackBehavior : MonoBehaviour

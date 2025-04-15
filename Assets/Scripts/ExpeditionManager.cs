@@ -12,6 +12,7 @@ public class ExpeditionManager : MonoBehaviour
     public int roundsLeft;
     public int goldCost;
     public bool expeditionStarted;
+    public bool expeditionEnded;
     // Start is called before the first frame update
     void Start()
     {
@@ -23,9 +24,11 @@ public class ExpeditionManager : MonoBehaviour
     {
         roundsLeft = 5 - roundsPassed;  
         goldCost = 25 + workers * 5;
-        if (expeditionStarted)
+        if (expeditionStarted && !expeditionEnded)
         {
             Expedition();
+            roundsPassed = 0;
+            workers = 0;
         }
     }
     public void AddWorker()
@@ -69,6 +72,8 @@ public class ExpeditionManager : MonoBehaviour
     {
         if (roundsPassed >= 5)
         {
+            expeditionEnded = true;
+            expeditionStarted = false;
             for (int i = 0; i < workers; i++)
             {
                 int itemRoll = Random.Range(0, 20);

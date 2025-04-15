@@ -6,6 +6,7 @@ public class UIManager : MonoBehaviour
 {
     public GameObject levelUpPanel;
     public GameObject expeditionPanel;
+    public GameObject inventoryPanel;
     public int currentOpenUI;
     // Start is called before the first frame update
     void Start()
@@ -42,6 +43,19 @@ public class UIManager : MonoBehaviour
     public void HideExpeditionPanel()
     {
         expeditionPanel.SetActive(false);
+        currentOpenUI = 0;
+    }
+    public void ShowInventoryPanel()
+    {
+        if (currentOpenUI == 0)
+        {
+            inventoryPanel.SetActive(true);
+            currentOpenUI = 3;
+        }
+    }
+    public void HideInventoryPanel()
+    {
+        inventoryPanel.SetActive(false);
         currentOpenUI = 0;
     }
 }
