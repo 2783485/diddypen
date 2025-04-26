@@ -24,7 +24,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1108096034374571138}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -0.009, y: -0.969, z: 0.03329144}
+  m_LocalPosition: {x: -0.47, y: -1.9, z: 0.03329144}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -107,10 +107,10 @@ SpriteRenderer:
   m_LightmapParameters: {fileID: 0}
   m_SortingLayerID: 0
   m_SortingLayer: 0
-  m_SortingOrder: 0
-  m_Sprite: {fileID: -9095717837082945937, guid: 207ee8102dd4143d288186ef0be518ee, type: 3}
+  m_SortingOrder: 1
+  m_Sprite: {fileID: 21300000, guid: 90847c534b5443f4895cd7e90f4dd625, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
-  m_FlipX: 0
+  m_FlipX: 1
   m_FlipY: 0
   m_DrawMode: 0
   m_Size: {x: 1, y: 2}
@@ -178,18 +178,18 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: -0.0015920401, y: -0.06863943}
+  m_Offset: {x: -0.34446526, y: -0.46955252}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 2}
+    oldSize: {x: 4, y: 4}
     newSize: {x: 1, y: 2}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.80477595, y: 1.8562014}
+  m_Size: {x: 0.8212681, y: 3.0313563}
   m_EdgeRadius: 0
 --- !u!114 &1217634689590461689
 MonoBehaviour:
@@ -203,22 +203,45 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 751cb99d3f2d31444b436db6061f3e10, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  moveSpeed: 8
-  jumpForce: 12
+  swordPrefab: {fileID: 7535770787883801318, guid: 705318cb8b291f0469f8b5b0d01fd379, type: 3}
+  playerLevel: 1
+  moveSpeed: 7
+  jumpForce: 14
   fastFallGravityScale: 4
   coyoteTime: 0.1
   groundCheck: {fileID: 7572407541685318527}
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
+  enemyAttackLayer:
+    serializedVersion: 2
+    m_Bits: 512
+  enemyLayer:
+    serializedVersion: 2
+    m_Bits: 256
   groundCheckRadius: 0.2
   attackPrefab: {fileID: 4768419170544067032, guid: d659ffaad8bc49643921551abb4f69b0, type: 3}
-  attackOffset: 1.5
+  arcaneProjectilePrefab: {fileID: 4216966372355081704, guid: 1b5324d8d1c454c4ba1424f72c1f51d4, type: 3}
+  attackOffset: 2.5
   dashForce: 20
-  dashDuration: 0.2
-  dashCooldown: 1
+  dashDuration: 0.3
+  dashCooldown: 0.75
   isDashing: 0
   hasIFrames: 0
-  attackCooldown: 0.75
-  attackDuration: 0.25
+  attackCooldown: 1.5
+  attackDuration: 0.4
   health: 20
+  maxHealth: 20
+  strength: 10
+  arcana: 10
+  vitality: 10
+  agility: 10
+  levelUpCost: 0
+  fireRate: 1
+  attackType: 0
+  bloodVFX: {fileID: 3671977691477792121, guid: d9443a03bf63c3a49ad4f0b79ec00a18, type: 3}
+  playerHit: {fileID: 21300000, guid: 64f1d0d55c613f846b3bdeb281323f39, type: 3}
+  playerDefault: {fileID: 21300000, guid: 90847c534b5443f4895cd7e90f4dd625, type: 3}
+  bloodExplosionVFX: {fileID: 3681391404604858574, guid: 53028e60460c75f48acfa84f2731c39b, type: 3}
+  playerCorpse: {fileID: 5302652575201733132, guid: f26251ed12307f040bd23828b23681fe, type: 3}
+  isFacingRight: 1

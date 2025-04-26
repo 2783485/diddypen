@@ -5,5 +5,5 @@ using UnityEngine;
 public class DamageDealer : MonoBehaviour
 {
     public int damage;
-    public int GetDamage() { return damage + FindObjectOfType<PlayerController>().strength * 2; }
+    public int GetDamage() { return damage; }
 }

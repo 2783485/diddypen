@@ -27,7 +27,7 @@ public class InventoryManager : MonoBehaviour
         if (mushrooms > 0 && emptyBottles > 0)
         {
             mushrooms--;
-            emptyBottles--;
+            emptyBottles -= 2;
             healthPot += 2;
         }
     }
@@ -45,7 +45,7 @@ public class InventoryManager : MonoBehaviour
         if (arcanaOrb > 0 && emptyBottles > 0)
         {
             emptyBottles--;
-            arcanaOrb--;
+            arcanaOrb -= 5;
             skillBuffPot++;
         }
     }

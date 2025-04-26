@@ -4,7 +4,6 @@ public class ArcaneProjectile : MonoBehaviour
 {
     public float speed = 10f;
     public bool isFacingRight;
-    public int damage = 10;
     private Rigidbody2D rb;
     public float lifetime = 2f;
 
@@ -13,7 +12,10 @@ public class ArcaneProjectile : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
         Destroy(gameObject, lifetime);
     }
-
+    private void Update()
+    {
+        gameObject.GetComponent<DamageDealer>().damage = FindObjectOfType<PlayerController>().arcana * 7;
+    }
     void FixedUpdate()
     {
         rb.velocity = isFacingRight ? Vector2.right * speed : Vector2.left * speed;
@@ -26,9 +28,7 @@ public class ArcaneProjectile : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.layer == LayerMask.NameToLayer("Enemy") || collision.gameObject.layer == LayerMask.NameToLayer("Enemy Attack"))
-        {
-            Destroy(gameObject);
-        }
+        Destroy(gameObject);
     }
+    
 }

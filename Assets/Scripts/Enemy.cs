@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -6,37 +7,37 @@ public class Enemy : MonoBehaviour
     public float moveSpeed = 3f;
     public float jumpForce = 7f;
     public float detectionRange = 10f;
-    public LayerMask groundLayer;
+    public float attackDistance = 2f;
     public Transform groundCheck;
     public float groundCheckRadius = 0.2f;
+    public ParticleSystem bloodVFX;
+    public LayerMask groundLayer;
     public int health = 100;
     public int damage = 5;
-    public float attackDistance = 2f;
     public GameObject attackPrefab;
     public float attackCooldown = 0.75f;
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
     public int minGoldDrop = 15;
     public int maxGoldDrop = 25;
+    public Sprite enemyHit;
+    public Sprite enemyDefault;
+    int goldDrop;
     public EnemySpawnHandler spawnHandler;
-
     Rigidbody2D rb;
-    bool isGrounded;
+    bool isGrounded = false;
     bool canAttack = true;
     float attackChance = 0f;
     Vector3 lastPlayerPosition;
     public bool isDead = false;
-    int goldDrop;
-    float nextMoveDecisionTime = 0f;
-    float moveDecisionCooldown = 2f;
-    bool isMoving = false;
-    bool isStrafing = false;
-    float strafeTime = 1f;
-    float strafeCooldown = 5f;
-    bool isDashing = false;
+    public int enemyAttackType;
+    public GameObject enemySword;
+    public float attackOffset;
 
     void Start()
     {
+        health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
+        damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
         player = FindObjectOfType<PlayerController>().transform;
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
@@ -44,9 +45,7 @@ public class Enemy : MonoBehaviour
 
     void Update()
     {
-        if (isDead) return;
-
-        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
+        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
 
         if (distanceToPlayer <= detectionRange)
         {
@@ -54,162 +53,93 @@ public class Enemy : MonoBehaviour
             {
                 rb.velocity = Vector2.zero;
 
-                if (player.transform.position != lastPlayerPosition)
+                if (player.position != lastPlayerPosition)
                 {
-                    lastPlayerPosition = player.transform.position;
-                    attackChance = 0f;
+                    lastPlayerPosition = player.position;
                 }
 
-                attackChance = Mathf.Clamp(attackChance + attackChanceIncreaseRate * Time.deltaTime, 0f, 100f);
+                attackChance += attackChanceIncreaseRate * Time.deltaTime;
+                attackChance = Mathf.Clamp(attackChance, 0f, 100f);
 
                 if (canAttack && Random.Range(0f, 100f) < attackChance)
                 {
-                    PerformRandomAttack();
+                    PerformAttack();
                 }
             }
             else
             {
-                HandleMovementVariation();
+                FollowPlayer();
             }
-        }
-    }
-
-    void HandleMovementVariation()
-    {
-        if (Time.time >= nextMoveDecisionTime)
-        {
-            float randomChoice = Random.value;
-
-            if (randomChoice < 0.5f)
-            {
-                isMoving = true;
-                isStrafing = false;
-                isDashing = false;
-            }
-            else if (randomChoice < 0.75f)
-            {
-                isMoving = false;
-                isStrafing = false;
-                isDashing = true;
-            }
-            else if (randomChoice < 0.9f)
-            {
-                isStrafing = true;
-                strafeTime = Time.time + 0.5f;  
-            }
-            else
-            {
-                isDashing = true;
-            }
-
-            nextMoveDecisionTime = Time.time + moveDecisionCooldown;
-        }
-
-        if (isMoving)
-        {
-            FollowPlayer();
-        }
-        else if (isStrafing && Time.time < strafeTime)
-        {
-            Strafe();
-        }
-        else if (isDashing)
-        {
-            Dash();
         }
     }
 
     void FollowPlayer()
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
-        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
+
+        float direction = Mathf.Sign(player.position.x - transform.position.x);
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
 
         if (direction > 0)
         {
-            transform.localScale = new Vector3(Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            transform.localScale = new Vector3(1, 1, 1);
         }
-        else if (direction < 0)
+        else
         {
-            transform.localScale = new Vector3(-Mathf.Abs(transform.localScale.x), transform.localScale.y, transform.localScale.z);
+            transform.localScale = new Vector3(-1, 1, 1);
         }
 
-        if (player.transform.position.y > transform.position.y + 1f && isGrounded && Random.value > 0.5f)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-        }
     }
 
-    void Strafe()
-    {
-        float direction = Random.value > 0.5f ? 1f : -1f;
-        rb.velocity = new Vector2(direction * moveSpeed * 0.75f, rb.velocity.y);
-    }
-
-    void Dash()
-    {
-        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
-        rb.velocity = new Vector2(direction * moveSpeed * 2.5f, rb.velocity.y);
-        isDashing = false;
-    }
-
-    void PerformRandomAttack()
+    void PerformAttack()
     {
         canAttack = false;
         rb.velocity = Vector2.zero;
-
-        int attackType = Random.Range(0, 3);
-
-        switch (attackType)
-        {
-            case 0:
-                StandardAttack();
-                break;
-            case 1:
-                JumpAttack();
-                break;
-            case 2:
-                ChargeAttack();
-                break;
-        }
-
+        StandardAttack();
         attackChance = 0f;
-        Invoke(nameof(ResetAttack), attackCooldown);  
+        Invoke(nameof(ResetAttack), attackCooldown);
     }
 
     void StandardAttack()
     {
-        Vector3 attackDirection = GetAttackDirection();
-        Vector3 spawnPosition = transform.position + attackDirection;
+        Vector3 direction = GetAttackDirection();
+        Vector3 spawnPosition = transform.position + direction;
+        Instantiate(enemySword, spawnPosition, Quaternion.identity);
         GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
         Destroy(attack, attackLifetime);
     }
 
-    void JumpAttack()
-    {
-        if (isGrounded)
-        {
-            rb.velocity = new Vector2(rb.velocity.x, jumpForce * 1.5f);
-        }
-    }
-
-    void ChargeAttack()
-    {
-        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
-        rb.velocity = new Vector2(direction * moveSpeed * 2, rb.velocity.y);
-    }
-
     Vector3 GetAttackDirection()
     {
-        Vector3 toPlayer = player.transform.position - transform.position;
+        enemyAttackType = 0;
+        Vector3 toPlayer = player.position - transform.position;
         if (Mathf.Abs(toPlayer.x) > Mathf.Abs(toPlayer.y))
         {
-            return toPlayer.x > 0 ? Vector3.right : Vector3.left;
+            if(toPlayer.x > 0)
+            {
+                enemyAttackType = 2;
+                return Vector3.right * attackOffset;
+            }
+            else
+            {
+                enemyAttackType = 4;
+                return Vector3.left * attackOffset;
+            }
         }
         else
         {
-            return toPlayer.y > 0 ? Vector3.up : Vector3.down;
+            if (toPlayer.y > 0)
+            {
+                enemyAttackType = 1;
+                return Vector3.up * attackOffset;
+            }
+            else
+            {
+                enemyAttackType = 3;
+                return Vector3.down * attackOffset;
+            }
         }
+
     }
 
     void ResetAttack()
@@ -232,27 +162,50 @@ public class Enemy : MonoBehaviour
             Die();
         }
     }
+
+    public void HitAnimation()
+    {
+        StartCoroutine(HitSprites());
+    }
+    public IEnumerator HitSprites()
+    {
+        Instantiate(bloodVFX, transform.position, Quaternion.identity);
+        GetComponent<SpriteRenderer>().sprite = enemyHit;
+        yield return new WaitForSeconds(0.3f);
+        GetComponent<SpriteRenderer>().sprite = enemyDefault;
+    }
+
+
     void Die()
     {
         isDead = true;
+
         if (spawnHandler != null)
         {
             spawnHandler.hasSpawnedEnemy = false;
         }
-        goldDrop = Random.Range(minGoldDrop, maxGoldDrop);
+
+        goldDrop = Random.Range(minGoldDrop, maxGoldDrop) + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
+        FindObjectOfType<EnemyLevelManager>().enemyLevel++;
         FindObjectOfType<GoldManager>().AddGold(goldDrop);
         FindObjectOfType<ExpeditionManager>().AddRoundPassed();
+        FindObjectOfType<RoundManager>().roundsPassed++;
         Destroy(gameObject, 0.001f);
     }
+
     public int GetGoldDropped()
     {
-        return goldDrop;    
+        return goldDrop;
     }
+
     public void SetSpawnHandler(EnemySpawnHandler handler)
     {
         spawnHandler = handler;
     }
+    public void PlayerIsDying()
+    {
+        GetComponent<Enemy>().enabled = false;
+    }
 }
-

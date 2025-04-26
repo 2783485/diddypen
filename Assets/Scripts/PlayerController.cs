@@ -1,8 +1,10 @@
 using UnityEngine;
 using System.Collections;
+using Unity.PlasticSCM.Editor.WebApi;
 
 public class PlayerController : MonoBehaviour
 {
+    public GameObject swordPrefab;
     public int playerLevel;
     public float moveSpeed = 5f;
     public float jumpForce = 8f;
@@ -33,33 +35,49 @@ public class PlayerController : MonoBehaviour
     public float agility;
     bool healthFixed;
     public int levelUpCost;
+    public float fireRate;
+    public int attackType;
+    bool buffedUp = false;
+    int drankOnRound;
+    bool unbuffed;
+    public ParticleSystem bloodVFX;
+    public Sprite playerHit;
+    public Sprite playerDefault;
+    public ParticleSystem bloodExplosionVFX;
+    public GameObject playerCorpse;
 
     bool isAttacking = false;
     Rigidbody2D rb;
     bool isGrounded;
     float coyoteTimeCounter;
     float defaultGravityScale;
-    bool isFacingRight = true;
+    public bool isFacingRight = true;
+    bool canFire = true;
     Collider2D coli;
 
     void Start()
     {
+        Instantiate(attackPrefab, transform.position, Quaternion.identity);
         rb = GetComponent<Rigidbody2D>();
         coli = GetComponent<Collider2D>();
         defaultGravityScale = rb.gravityScale;
         rb.freezeRotation = true;
-        maxHealth = 10 + vitality * 5;
+        maxHealth = 40 + vitality * 5;
         levelUpCost = 20 + playerLevel * 10;
         FixHealth();
     }
 
     void Update()
     {
-        levelUpCost = 20 + playerLevel * 10;
+        levelUpCost = 20 + playerLevel * 5;
         if (!isAttacking)
+        {
             Move();
+        }
         else if (isAttacking)
+        {
             rb.velocity = Vector2.zero;
+        }
 
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
@@ -72,14 +90,19 @@ public class PlayerController : MonoBehaviour
         {
             coyoteTimeCounter -= Time.deltaTime;
             if (rb.velocity.y <= 0)
+            {
                 rb.gravityScale = fastFallGravityScale;
+            }
         }
 
         if (Input.GetButtonDown("Jump") && coyoteTimeCounter > 0)
+        {
             Jump();
-
+        }
         if (attackCooldownTimer > 0)
+        {
             attackCooldownTimer -= Time.deltaTime;
+        }
 
         if (Input.GetButtonDown("Fire1") && attackCooldownTimer <= 0)
         {
@@ -88,46 +111,87 @@ public class PlayerController : MonoBehaviour
         }
 
         if (Input.GetKeyDown(KeyCode.Mouse1))
-            Fire();
+        {
+            StartCoroutine(Fire());
+        }
 
         if (Input.GetKeyDown(KeyCode.LeftShift) && dashCooldownTimer <= 0)
+        {
             StartCoroutine(Dash());
-
+        }
         if (dashCooldownTimer > 0)
+        {
             dashCooldownTimer -= Time.deltaTime;
+        }
+        if (Input.GetKeyDown(KeyCode.F))
+        {
+            HealPotion();
+        }
+        if (Input.GetKeyDown(KeyCode.G))
+        {
+            BuffPotion();
+        }
+        if (FindObjectOfType<RoundManager>().roundsPassed - drankOnRound >= 2)
+        {
+            if (!unbuffed && buffedUp)
+            {
+                Unbuff();
+            }
+            unbuffed = true;
+            buffedUp = false;
+        }
+
     }
 
     void Move()
     {
-        if (isDashing) return;
+        if (isDashing)
+        {
+            return;
+        }
 
         float moveInput = Input.GetAxisRaw("Horizontal");
         rb.velocity = new Vector2(moveInput * moveSpeed, rb.velocity.y);
 
         if (moveInput > 0 && !isFacingRight)
+        {
             Flip();
+        }
         else if (moveInput < 0 && isFacingRight)
+        {
             Flip();
+        }
     }
 
-    void Fire()
+    IEnumerator Fire()
     {
-        Vector3 spawnPosition = transform.position;
-        if (isFacingRight)
-            spawnPosition += Vector3.right * 0.5f;
-        else
-            spawnPosition += Vector3.left * 0.5f;
-
-        GameObject projectile = Instantiate(arcaneProjectilePrefab, spawnPosition, isFacingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0));
-        ArcaneProjectile projectileComponent = projectile.GetComponent<ArcaneProjectile>();
-
-        if (projectileComponent != null)
+        if (canFire)
         {
-            projectileComponent.SetDirection(isFacingRight);
-            projectileComponent.damage = arcana * 5;
+            canFire = false;
+            if (FindObjectOfType<InventoryManager>().projectileSkill > 0)
+            {
+                FindObjectOfType<InventoryManager>().projectileSkill--;
+                Vector3 spawnPosition = transform.position;
+                if (isFacingRight)
+                {
+                    spawnPosition += Vector3.right * 0.5f;
+                }
+                else
+                {
+                    spawnPosition += Vector3.left * 0.5f;
+                }
+
+                GameObject projectile = Instantiate(arcaneProjectilePrefab, spawnPosition, isFacingRight ? Quaternion.identity : Quaternion.Euler(0, 180, 0));
+                ArcaneProjectile projectileComponent = projectile.GetComponent<ArcaneProjectile>();
+
+                if (projectileComponent != null)
+                {
+                    projectileComponent.SetDirection(isFacingRight);
+                }
+                yield return new WaitForSeconds(fireRate);
+                canFire = true;
+            }
         }
-        else
-            Debug.LogError("ArcaneProjectile script not found on the projectile prefab!");
     }
 
     public void FixHealth()
@@ -136,7 +200,7 @@ public class PlayerController : MonoBehaviour
         healthFixed = true;
     }
 
-    void Jump()
+    public void Jump()
     {
         rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         coyoteTimeCounter = 0;
@@ -178,6 +242,7 @@ public class PlayerController : MonoBehaviour
         {
             vitality++;
             FindObjectOfType<GoldManager>().RemoveGold(levelUpCost);
+            maxHealth = 10 + vitality * 5;
             LevelUp();
         }
     }
@@ -197,26 +262,41 @@ public class PlayerController : MonoBehaviour
         bool isAirborne = !isGrounded;
 
         if (holdingUp)
+        {
             spawnPosition = transform.position + Vector3.up * attackOffset;
+            attackType = 1;
+        }
         else if (holdingDown && isAirborne)
+        {
             spawnPosition = transform.position + Vector3.down * attackOffset;
+            attackType = 3;
+        }
         else
+        {
             spawnPosition = transform.position + (isFacingRight ? Vector3.right : Vector3.left) * attackOffset;
-
+            if (isFacingRight)
+            {
+                attackType = 2;
+            }
+            else if (!isFacingRight)
+            {
+                attackType = 4;
+            }
+        }
         GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
-
+        Instantiate(swordPrefab, spawnPosition, Quaternion.identity);
+        if (!isFacingRight)
+        {
+            Vector3 scale = attack.transform.localScale;
+            scale.x *= -1;
+            attack.transform.localScale = scale;
+        }
         Collider2D attackCollider = attack.GetComponent<Collider2D>();
         if (attackCollider != null)
+        {
             attackCollider.isTrigger = true;
-        else
-            Debug.Log("no collider");
-
-        AttackBehavior attackBehavior = attack.GetComponent<AttackBehavior>();
-        if (attackBehavior == null)
-            attackBehavior = attack.AddComponent<AttackBehavior>();
-
-        if (isGrounded)
-            StartCoroutine(AttackLock());
+        }
+        StartCoroutine(AttackLock());
     }
 
     IEnumerator AttackLock()
@@ -260,24 +340,76 @@ public class PlayerController : MonoBehaviour
     {
         if (!hasIFrames)
         {
-            health -= damageDealer.GetDamage() - strength * 2;
+            health -= damageDealer.GetDamage();
             if (health <= 0)
-                Debug.Log("Player dead");
+            {
+                Die();
+            }
         }
+    }
+    public void Die()
+    {
+        health = 0;
+        GetComponent<SpriteRenderer>().sprite = playerHit;
+        moveSpeed = 0;
+        jumpForce = 0;
+        dashDuration = 0;
+        dashForce = 0;
+        Instantiate(playerCorpse, transform.position, Quaternion.identity);
+        Destroy(gameObject, 0.05f);
+    }
+    public void HitAnimation()
+    {
+        StartCoroutine(HitSprites());
+    }
+    public IEnumerator HitSprites()
+    {
+        Instantiate(bloodVFX, transform.position, Quaternion.identity);
+        GetComponent<SpriteRenderer>().sprite = playerHit;
+        yield return new WaitForSeconds(0.3f);
+        GetComponent<SpriteRenderer>().sprite = playerDefault;
     }
 
     public void LevelUp()
     {
         playerLevel++;
     }
-}
-
-public class AttackBehavior : MonoBehaviour
-{
-    public float lifetime = 0.1f;
-
-    void Start()
+    public void BuffPotion()
     {
-        Destroy(gameObject, lifetime);
+        if (!buffedUp)
+        {
+            drankOnRound = FindObjectOfType<RoundManager>().roundsPassed;
+            FindObjectOfType<InventoryManager>().skillBuffPot--;
+            Buffed();
+            buffedUp = true;
+        }
+    }
+    public void Buffed()
+    {
+        strength += 5;
+        arcana += 5;
+        agility += 5;
+        vitality += 5;
+        maxHealth = 40 + vitality * 5;
+    }
+    public void Unbuff()
+    {
+        strength -= 5;
+        agility -= 5;
+        arcana -= 5;
+        vitality -= 5;
+        maxHealth = 40 + vitality * 5;
+    }
+    public void HealPotion()
+    {
+        if (FindObjectOfType<InventoryManager>().healthPot > 0)
+        {
+            FindObjectOfType<InventoryManager>().healthPot--;
+            health += vitality * 3;
+            if (health > maxHealth)
+            {
+                health = maxHealth;
+            }
+        }
     }
 }

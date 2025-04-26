@@ -16,7 +16,7 @@ public class RemainingRoundsDisplay : MonoBehaviour
     {
         if (FindObjectOfType<ExpeditionManager>().expeditionStarted)
         {
-            GetComponent<TextMeshProUGUI>().text = "Expedition started. Rounds left to completion: " + FindObjectOfType<ExpeditionManager>().roundsLeft.ToString();
+            GetComponent<TextMeshProUGUI>().text = "Expedition already started. Rounds left to completion: " + FindObjectOfType<ExpeditionManager>().roundsLeft.ToString();
         }
         else
         {

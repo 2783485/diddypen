@@ -26,6 +26,6 @@ public class InventoryUIManager : MonoBehaviour
         emptyBottlesText.GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().emptyBottles.ToString() + "x Empty Potion Bottles";
         healPotText.GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().healthPot.ToString() + "x Healing Potions";
         buffPotText.GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().skillBuffPot.ToString() + "x Buffing Potions";
-        magicProjectileText.GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().projectileSkill.ToString() + "x Arcane Projectiles";
+        magicProjectileText.GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().projectileSkill.ToString() + "x Arcane Mushrooms";
     }
 }
