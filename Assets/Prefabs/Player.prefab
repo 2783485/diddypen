@@ -229,7 +229,7 @@ MonoBehaviour:
   isDashing: 0
   hasIFrames: 0
   attackCooldown: 1.5
-  attackDuration: 0.4
+  attackDuration: 0.2
   health: 20
   maxHealth: 20
   strength: 10

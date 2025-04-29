@@ -1,4 +1,6 @@
 using System.Collections;
+using Unity.VisualScripting;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
@@ -20,8 +22,6 @@ public class Enemy : MonoBehaviour
     public float attackChanceIncreaseRate = 7.5f;
     public int minGoldDrop = 15;
     public int maxGoldDrop = 25;
-    public Sprite enemyHit;
-    public Sprite enemyDefault;
     int goldDrop;
     public EnemySpawnHandler spawnHandler;
     Rigidbody2D rb;
@@ -33,9 +33,55 @@ public class Enemy : MonoBehaviour
     public int enemyAttackType;
     public GameObject enemySword;
     public float attackOffset;
+    public bool hitStopOn;
+    public Sprite lowLevelSprite;
+    public Sprite lowLevelSpriteHit;
+    public Sprite paladinSprite;
+    public Sprite paladinSpriteHit;
+    public Sprite eldritchKnightSprite;
+    public Sprite eldritchKnightSpriteHit;
+    public int enemyType;
 
     void Start()
     {
+        if (FindObjectOfType<EnemyLevelManager>().enemyLevel >= 9)
+        {
+            enemyType = Random.Range(0, 3);
+            if (enemyType == 0)
+            {
+                GetComponent<SpriteRenderer>().sprite = lowLevelSprite;
+            }
+            else if (enemyType == 1)
+            {
+                GetComponent<SpriteRenderer>().sprite = paladinSprite;
+            }
+            else if (enemyType == 2)
+            {
+                GetComponent<SpriteRenderer>().sprite = eldritchKnightSprite;
+            }
+        }
+        else if (FindObjectOfType<EnemyLevelManager>().enemyLevel >= 24)
+        {
+            enemyType = Random.Range(1, 3);
+            if (enemyType == 1)
+            {
+                GetComponent<SpriteRenderer>().sprite = paladinSprite;
+            }
+            else if (enemyType == 2)
+            {
+                GetComponent<SpriteRenderer>().sprite = eldritchKnightSprite;
+            }
+        }
+        if (FindObjectOfType<EnemyLevelManager>().enemyLevel <= 9)
+        {
+            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
+            damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
+        }
+        else if(FindObjectOfType<EnemyLevelManager>().enemyLevel > 9)
+        {
+            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 50;
+            damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
+        }
         health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
         damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
         player = FindObjectOfType<PlayerController>().transform;
@@ -95,16 +141,17 @@ public class Enemy : MonoBehaviour
     {
         canAttack = false;
         rb.velocity = Vector2.zero;
-        StandardAttack();
+        StartCoroutine(StandardAttack());
         attackChance = 0f;
         Invoke(nameof(ResetAttack), attackCooldown);
     }
 
-    void StandardAttack()
+    IEnumerator StandardAttack()
     {
         Vector3 direction = GetAttackDirection();
         Vector3 spawnPosition = transform.position + direction;
         Instantiate(enemySword, spawnPosition, Quaternion.identity);
+        yield return new WaitForSeconds(0.3f);
         GameObject attack = Instantiate(attackPrefab, spawnPosition, Quaternion.identity);
         Destroy(attack, attackLifetime);
     }
@@ -157,6 +204,7 @@ public class Enemy : MonoBehaviour
     {
         if (isDead) return;
         health -= damageDealer.GetDamage();
+        StartCoroutine(HitStop());
         if (health <= 0)
         {
             Die();
@@ -170,9 +218,32 @@ public class Enemy : MonoBehaviour
     public IEnumerator HitSprites()
     {
         Instantiate(bloodVFX, transform.position, Quaternion.identity);
-        GetComponent<SpriteRenderer>().sprite = enemyHit;
+        if (enemyType == 0)
+        {
+            GetComponent<SpriteRenderer>().sprite = lowLevelSpriteHit;
+        }
+        else if (enemyType == 1)
+        {
+            GetComponent<SpriteRenderer>().sprite = paladinSpriteHit;
+        }
+        else if (enemyType == 2)
+        {
+            GetComponent<SpriteRenderer>().sprite = eldritchKnightSpriteHit;
+        }
         yield return new WaitForSeconds(0.3f);
-        GetComponent<SpriteRenderer>().sprite = enemyDefault;
+        if (enemyType == 0)
+        {
+            GetComponent<SpriteRenderer>().sprite = lowLevelSprite;
+        }
+        else if (enemyType == 1)
+        {
+            GetComponent<SpriteRenderer>().sprite = paladinSprite;
+        }
+        else if (enemyType == 2)
+        {
+            GetComponent<SpriteRenderer>().sprite = eldritchKnightSprite;
+        }
+        GetComponent<SpriteRenderer>().sprite = lowLevelSprite;
     }
 
 
@@ -184,8 +255,7 @@ public class Enemy : MonoBehaviour
         {
             spawnHandler.hasSpawnedEnemy = false;
         }
-
-        goldDrop = Random.Range(minGoldDrop, maxGoldDrop) + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
+        goldDrop = Random.Range(minGoldDrop, maxGoldDrop) + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
         FindObjectOfType<EnemyLevelManager>().enemyLevel++;
@@ -207,5 +277,13 @@ public class Enemy : MonoBehaviour
     public void PlayerIsDying()
     {
         GetComponent<Enemy>().enabled = false;
+    }
+    IEnumerator HitStop()
+    {
+        hitStopOn = true;
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(0.05f);
+        Time.timeScale = 1f;
+        hitStopOn = false;
     }
 }

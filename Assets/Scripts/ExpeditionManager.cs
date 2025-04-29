@@ -23,7 +23,7 @@ public class ExpeditionManager : MonoBehaviour
     void Update()
     {
         roundsLeft = 5 - roundsPassed;  
-        goldCost = 25 + workers * 5;
+        goldCost = 10 + workers * 5;
         if (expeditionStarted && !expeditionEnded)
         {
             Expedition();
@@ -70,7 +70,7 @@ public class ExpeditionManager : MonoBehaviour
     }
     public void Expedition()
     {
-        if (roundsPassed >= 5)
+        if (roundsPassed >= 3)
         {
             expeditionEnded = true;
             expeditionStarted = false;
@@ -79,19 +79,24 @@ public class ExpeditionManager : MonoBehaviour
                 int itemRoll = Random.Range(0, 20);
                 if (itemRoll == 1 || itemRoll == 2)
                 {
-                    FindObjectOfType<InventoryManager>().mushrooms++;
+                    FindObjectOfType<InventoryManager>().mushrooms += 2;
                 }
                 if (itemRoll == 3 || itemRoll == 4)
                 {
-                    FindObjectOfType<InventoryManager>().arcanaOrb++;
+                    FindObjectOfType<InventoryManager>().arcanaOrb += 2;
                 }
                 if(itemRoll == 5 || itemRoll == 6)
                 {
-                    FindObjectOfType<InventoryManager>().emptyBottles++;
+                    FindObjectOfType<InventoryManager>().emptyBottles += 2;
                 }
                 if(itemRoll == 7 || itemRoll == 8)
                 {
                     FindObjectOfType<InventoryManager>().healthPot++;
+                }
+                if(itemRoll == 9 || itemRoll == 10 || itemRoll == 11 || itemRoll == 12)
+                {
+                    FindObjectOfType<InventoryManager>().mushrooms += 4;
+                    FindObjectOfType<InventoryManager>().arcanaOrb += 2;
                 }
             }
         }

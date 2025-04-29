@@ -10,7 +10,7 @@ public class EnemySword : MonoBehaviour
     {
         anim = GetComponent<Animation>();
         PlaySwing();
-        Destroy(gameObject, 0.5f);
+        Destroy(gameObject, 0.8f);
     }
 
     // Update is called once per frame

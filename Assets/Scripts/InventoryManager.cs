@@ -35,7 +35,7 @@ public class InventoryManager : MonoBehaviour
     {
         if (mushrooms > 0 && arcanaOrb > 0)
         {
-            mushrooms--;
+            mushrooms -= 4;
             arcanaOrb--;
             projectileSkill += 4;
         }
@@ -45,7 +45,7 @@ public class InventoryManager : MonoBehaviour
         if (arcanaOrb > 0 && emptyBottles > 0)
         {
             emptyBottles--;
-            arcanaOrb -= 5;
+            arcanaOrb -= 3;
             skillBuffPot++;
         }
     }

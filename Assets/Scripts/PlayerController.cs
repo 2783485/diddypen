@@ -45,6 +45,7 @@ public class PlayerController : MonoBehaviour
     public Sprite playerDefault;
     public ParticleSystem bloodExplosionVFX;
     public GameObject playerCorpse;
+    public bool hitStopOn;
 
     bool isAttacking = false;
     Rigidbody2D rb;
@@ -69,7 +70,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        levelUpCost = 20 + playerLevel * 5;
+        levelUpCost = 10 + playerLevel * 5;
         if (!isAttacking)
         {
             Move();
@@ -139,6 +140,10 @@ public class PlayerController : MonoBehaviour
             }
             unbuffed = true;
             buffedUp = false;
+        }
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            FindObjectOfType<UIManager>().ShowMainPanel();
         }
 
     }
@@ -340,6 +345,7 @@ public class PlayerController : MonoBehaviour
     {
         if (!hasIFrames)
         {
+            StartCoroutine(HitStop());
             health -= damageDealer.GetDamage();
             if (health <= 0)
             {
@@ -357,6 +363,14 @@ public class PlayerController : MonoBehaviour
         dashForce = 0;
         Instantiate(playerCorpse, transform.position, Quaternion.identity);
         Destroy(gameObject, 0.05f);
+    }
+    public IEnumerator HitStop()
+    {
+        hitStopOn = true;
+        Time.timeScale = 0f;
+        yield return new WaitForSecondsRealtime(0.05f);
+        Time.timeScale = 1f;
+        hitStopOn = false;
     }
     public void HitAnimation()
     {
@@ -386,10 +400,10 @@ public class PlayerController : MonoBehaviour
     }
     public void Buffed()
     {
-        strength += 5;
-        arcana += 5;
-        agility += 5;
-        vitality += 5;
+        strength += strength/2;
+        arcana += strength/2;
+        agility += strength/2;
+        vitality += strength/ 2;
         maxHealth = 40 + vitality * 5;
     }
     public void Unbuff()
@@ -405,7 +419,7 @@ public class PlayerController : MonoBehaviour
         if (FindObjectOfType<InventoryManager>().healthPot > 0)
         {
             FindObjectOfType<InventoryManager>().healthPot--;
-            health += vitality * 3;
+            health += vitality / 2;
             if (health > maxHealth)
             {
                 health = maxHealth;

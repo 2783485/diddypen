@@ -217,18 +217,24 @@ MonoBehaviour:
   health: 100
   damage: 15
   attackPrefab: {fileID: 3696419074719722056, guid: 796137503131c074da41b71ee1a0533e, type: 3}
-  attackCooldown: 1
-  attackLifetime: 0.4
+  attackCooldown: 1.2
+  attackLifetime: 0.2
   attackChanceIncreaseRate: 25
   minGoldDrop: 14
   maxGoldDrop: 25
-  enemyHit: {fileID: 21300000, guid: 14e6a63a9ca881740980a4f7f7ee3d84, type: 3}
-  enemyDefault: {fileID: 21300000, guid: 47db735c2bbe79e49a0c2775b1fa6038, type: 3}
   spawnHandler: {fileID: 0}
   isDead: 0
   enemyAttackType: 0
   enemySword: {fileID: 6584485541553911881, guid: 47a4d2eef70e7b2469e60b1db8818c85, type: 3}
   attackOffset: 3
+  hitStopOn: 0
+  lowLevelSprite: {fileID: 21300000, guid: 47db735c2bbe79e49a0c2775b1fa6038, type: 3}
+  lowLevelSpriteHit: {fileID: 21300000, guid: 14e6a63a9ca881740980a4f7f7ee3d84, type: 3}
+  paladinSprite: {fileID: 21300000, guid: 258ad48e4ffe56642a0397df79e30aaa, type: 3}
+  paladinSpriteHit: {fileID: 21300000, guid: 95ea4b126d0d6324eba9c39bbacb9dc6, type: 3}
+  eldritchKnightSprite: {fileID: 21300000, guid: 9debf56369a6143439666575f335088f, type: 3}
+  eldritchKnightSpriteHit: {fileID: 21300000, guid: 01fdfb391a8269c4db0c453518b6da93, type: 3}
+  enemyType: 0
 --- !u!1 &6813908986571642791
 GameObject:
   m_ObjectHideFlags: 0
