@@ -217,7 +217,9 @@ MonoBehaviour:
   health: 100
   damage: 15
   attackPrefab: {fileID: 3696419074719722056, guid: 796137503131c074da41b71ee1a0533e, type: 3}
+  purpleOrbPrefab: {fileID: 8399792148649213656, guid: 894b125e89549af4aac3d023063ce576, type: 3}
   attackCooldown: 1.2
+  purpleOrbCooldown: 3
   attackLifetime: 0.2
   attackChanceIncreaseRate: 25
   minGoldDrop: 14

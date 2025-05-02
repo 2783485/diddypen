@@ -22,13 +22,11 @@ public class ExpeditionManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        roundsLeft = 5 - roundsPassed;  
+        roundsLeft = 3 - roundsPassed;  
         goldCost = 10 + workers * 5;
         if (expeditionStarted && !expeditionEnded)
         {
             Expedition();
-            roundsPassed = 0;
-            workers = 0;
         }
     }
     public void AddWorker()
@@ -63,20 +61,19 @@ public class ExpeditionManager : MonoBehaviour
     public int ReturnRoundsPassed() {  return roundsPassed; }
     public void StartExpedition()
     {
-        if (!expeditionStarted)
+        if (!expeditionStarted && workers > 0)
         {
             expeditionStarted = true;
+            expeditionEnded = false;
         }
     }
     public void Expedition()
     {
         if (roundsPassed >= 3)
         {
-            expeditionEnded = true;
-            expeditionStarted = false;
             for (int i = 0; i < workers; i++)
             {
-                int itemRoll = Random.Range(0, 20);
+                int itemRoll = Random.Range(0, 21);
                 if (itemRoll == 1 || itemRoll == 2)
                 {
                     FindObjectOfType<InventoryManager>().mushrooms += 2;
@@ -85,20 +82,28 @@ public class ExpeditionManager : MonoBehaviour
                 {
                     FindObjectOfType<InventoryManager>().arcanaOrb += 2;
                 }
-                if(itemRoll == 5 || itemRoll == 6)
+                if (itemRoll == 5 || itemRoll == 6)
                 {
                     FindObjectOfType<InventoryManager>().emptyBottles += 2;
                 }
-                if(itemRoll == 7 || itemRoll == 8)
+                if (itemRoll == 7 || itemRoll == 8)
                 {
                     FindObjectOfType<InventoryManager>().healthPot++;
                 }
-                if(itemRoll == 9 || itemRoll == 10 || itemRoll == 11 || itemRoll == 12)
+                if (itemRoll == 9 || itemRoll == 10 || itemRoll == 11 || itemRoll == 12)
                 {
                     FindObjectOfType<InventoryManager>().mushrooms += 4;
                     FindObjectOfType<InventoryManager>().arcanaOrb += 2;
                 }
+                if (itemRoll == 13)
+                {
+                    FindObjectOfType<InventoryManager>().treasureChests++;
+                }
             }
+            expeditionEnded = true;
+            expeditionStarted = false;
+            roundsPassed = 0;
+            workers = 0;
         }
     }
 }

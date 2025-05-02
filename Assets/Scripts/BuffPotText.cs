@@ -14,6 +14,6 @@ public class BuffPotText : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().skillBuffPot.ToString() + "x Buff Potions";
+        GetComponent<TextMeshProUGUI>().text = FindObjectOfType<InventoryManager>().projectileSkill.ToString() + "x Arcane Mushrooms";
     }
 }

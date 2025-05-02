@@ -8,6 +8,8 @@ public class UIManager : MonoBehaviour
     public GameObject expeditionPanel;
     public GameObject inventoryPanel;
     public GameObject mainUI;
+    public GameObject lootBoxUI;
+    public GameObject forgePanel;
     public GameObject[] statIcons;
     public int currentOpenUI;
     // Start is called before the first frame update
@@ -86,6 +88,34 @@ public class UIManager : MonoBehaviour
     {
         Time.timeScale = 1f;
         inventoryPanel.SetActive(false);
+        currentOpenUI = 0;
+    }
+    public void ShowLootboxPanel()
+    {
+        if (currentOpenUI == 0 || currentOpenUI == 4)
+            Time.timeScale = 0f;
+            lootBoxUI.SetActive(true);
+            mainUI.SetActive(false);
+            currentOpenUI = 5;
+    }
+    public void ShowForgePanel()
+    {
+        if (currentOpenUI == 0 || currentOpenUI == 4)
+            Time.timeScale = 0f;
+            forgePanel.SetActive(true);
+            mainUI.SetActive(false);
+            currentOpenUI = 6;
+    }
+    public void HideForgePanel()
+    {
+        Time.timeScale = 1f;
+        forgePanel.SetActive(false);
+        currentOpenUI = 0;
+    }
+    public void HideLootboxPanel()
+    {
+        Time.timeScale = 1f;
+        lootBoxUI.SetActive(false);
         currentOpenUI = 0;
     }
     public void ShowMainPanel()

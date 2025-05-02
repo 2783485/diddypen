@@ -1,11 +1,10 @@
 using System.Collections;
-using Unity.VisualScripting;
-using UnityEditor.Experimental.GraphView;
+using Unity.Services.CloudSave.Models.Data.Player;
 using UnityEngine;
 
 public class Enemy : MonoBehaviour
 {
-    Transform player;
+    PlayerController player;
     public float moveSpeed = 3f;
     public float jumpForce = 7f;
     public float detectionRange = 10f;
@@ -17,7 +16,9 @@ public class Enemy : MonoBehaviour
     public int health = 100;
     public int damage = 5;
     public GameObject attackPrefab;
+    public GameObject purpleOrbPrefab;
     public float attackCooldown = 0.75f;
+    public float purpleOrbCooldown = 3f;
     public float attackLifetime = 0.5f;
     public float attackChanceIncreaseRate = 7.5f;
     public int minGoldDrop = 15;
@@ -27,6 +28,7 @@ public class Enemy : MonoBehaviour
     Rigidbody2D rb;
     bool isGrounded = false;
     bool canAttack = true;
+    bool canShootOrb = true;
     float attackChance = 0f;
     Vector3 lastPlayerPosition;
     public bool isDead = false;
@@ -41,10 +43,11 @@ public class Enemy : MonoBehaviour
     public Sprite eldritchKnightSprite;
     public Sprite eldritchKnightSpriteHit;
     public int enemyType;
+    public bool hitBySword;
 
     void Start()
     {
-        if (FindObjectOfType<EnemyLevelManager>().enemyLevel >= 9)
+        if (FindObjectOfType<EnemyLevelManager>().enemyLevel >= 9 && FindObjectOfType<EnemyLevelManager>().enemyLevel < 24)
         {
             enemyType = Random.Range(0, 3);
             if (enemyType == 0)
@@ -72,26 +75,26 @@ public class Enemy : MonoBehaviour
                 GetComponent<SpriteRenderer>().sprite = eldritchKnightSprite;
             }
         }
+
         if (FindObjectOfType<EnemyLevelManager>().enemyLevel <= 9)
         {
             health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
             damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
         }
-        else if(FindObjectOfType<EnemyLevelManager>().enemyLevel > 9)
+        else if (FindObjectOfType<EnemyLevelManager>().enemyLevel > 9)
         {
             health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 50;
             damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
         }
-        health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
-        damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
-        player = FindObjectOfType<PlayerController>().transform;
+
+        player = FindObjectOfType<PlayerController>();
         rb = GetComponent<Rigidbody2D>();
         rb.freezeRotation = true;
     }
 
     void Update()
     {
-        float distanceToPlayer = Vector2.Distance(transform.position, player.position);
+        float distanceToPlayer = Vector2.Distance(transform.position, player.transform.position);
 
         if (distanceToPlayer <= detectionRange)
         {
@@ -99,9 +102,9 @@ public class Enemy : MonoBehaviour
             {
                 rb.velocity = Vector2.zero;
 
-                if (player.position != lastPlayerPosition)
+                if (player.transform.position != lastPlayerPosition)
                 {
-                    lastPlayerPosition = player.position;
+                    lastPlayerPosition = player.transform.position;
                 }
 
                 attackChance += attackChanceIncreaseRate * Time.deltaTime;
@@ -115,6 +118,11 @@ public class Enemy : MonoBehaviour
             else
             {
                 FollowPlayer();
+
+                if (enemyType == 2 && canShootOrb && Random.Range(0f, 100f) < 10f)
+                {
+                    StartCoroutine(ShootPurpleOrb());
+                }
             }
         }
     }
@@ -123,7 +131,7 @@ public class Enemy : MonoBehaviour
     {
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        float direction = Mathf.Sign(player.position.x - transform.position.x);
+        float direction = Mathf.Sign(player.transform.position.x - transform.position.x);
         rb.velocity = new Vector2(direction * moveSpeed, rb.velocity.y);
 
         if (direction > 0)
@@ -134,7 +142,6 @@ public class Enemy : MonoBehaviour
         {
             transform.localScale = new Vector3(-1, 1, 1);
         }
-
     }
 
     void PerformAttack()
@@ -159,10 +166,10 @@ public class Enemy : MonoBehaviour
     Vector3 GetAttackDirection()
     {
         enemyAttackType = 0;
-        Vector3 toPlayer = player.position - transform.position;
+        Vector3 toPlayer = player.transform.position - transform.position;
         if (Mathf.Abs(toPlayer.x) > Mathf.Abs(toPlayer.y))
         {
-            if(toPlayer.x > 0)
+            if (toPlayer.x > 0)
             {
                 enemyAttackType = 2;
                 return Vector3.right * attackOffset;
@@ -186,7 +193,18 @@ public class Enemy : MonoBehaviour
                 return Vector3.down * attackOffset;
             }
         }
+    }
 
+    IEnumerator ShootPurpleOrb()
+    {
+        canShootOrb = false;
+        Vector3 direction = (player.transform.position - transform.position).normalized;
+        GameObject orb = Instantiate(purpleOrbPrefab, transform.position, Quaternion.identity);
+        Rigidbody2D orbRb = orb.GetComponent<Rigidbody2D>();
+        orbRb.velocity = direction * 8f;
+        Destroy(orb, 3f);
+        yield return new WaitForSeconds(purpleOrbCooldown);
+        canShootOrb = true;
     }
 
     void ResetAttack()
@@ -202,9 +220,20 @@ public class Enemy : MonoBehaviour
 
     void ProcessHit(DamageDealer damageDealer)
     {
-        if (isDead) return;
-        health -= damageDealer.GetDamage();
+        if (isDead)
+        {
+            return;
+        }
+
+        int damageTaken = damageDealer.GetDamage();
+        if (enemyType == 1)
+        {
+            damageTaken = damageTaken / 2;
+        }
+
+        health -= damageTaken;
         StartCoroutine(HitStop());
+
         if (health <= 0)
         {
             Die();
@@ -215,6 +244,7 @@ public class Enemy : MonoBehaviour
     {
         StartCoroutine(HitSprites());
     }
+
     public IEnumerator HitSprites()
     {
         Instantiate(bloodVFX, transform.position, Quaternion.identity);
@@ -230,7 +260,9 @@ public class Enemy : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().sprite = eldritchKnightSpriteHit;
         }
+
         yield return new WaitForSeconds(0.3f);
+
         if (enemyType == 0)
         {
             GetComponent<SpriteRenderer>().sprite = lowLevelSprite;
@@ -243,9 +275,7 @@ public class Enemy : MonoBehaviour
         {
             GetComponent<SpriteRenderer>().sprite = eldritchKnightSprite;
         }
-        GetComponent<SpriteRenderer>().sprite = lowLevelSprite;
     }
-
 
     void Die()
     {
@@ -255,9 +285,11 @@ public class Enemy : MonoBehaviour
         {
             spawnHandler.hasSpawnedEnemy = false;
         }
+
         goldDrop = Random.Range(minGoldDrop, maxGoldDrop) + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
         GetComponent<Collider2D>().enabled = false;
         GetComponent<SpriteRenderer>().enabled = false;
+        FindObjectOfType<Background>().RerollTime();
         FindObjectOfType<EnemyLevelManager>().enemyLevel++;
         FindObjectOfType<GoldManager>().AddGold(goldDrop);
         FindObjectOfType<ExpeditionManager>().AddRoundPassed();
@@ -274,10 +306,12 @@ public class Enemy : MonoBehaviour
     {
         spawnHandler = handler;
     }
+
     public void PlayerIsDying()
     {
         GetComponent<Enemy>().enabled = false;
     }
+
     IEnumerator HitStop()
     {
         hitStopOn = true;
@@ -285,5 +319,73 @@ public class Enemy : MonoBehaviour
         yield return new WaitForSecondsRealtime(0.05f);
         Time.timeScale = 1f;
         hitStopOn = false;
+    }
+
+    public IEnumerator SwordOnFire()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            yield return new WaitForSeconds(0.5f);
+            health -= player.rubiesInBlade;
+            HitAnimation();
+        }
+    }
+
+    public IEnumerator ProjOnFire()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            yield return new WaitForSeconds(0.5f);
+            health -= player.rubiesInProj;
+            HitAnimation();
+        }
+    }
+
+    public IEnumerator SwordCold()
+    {
+        moveSpeed = 3;
+        attackCooldown = 2;
+        yield return new WaitForSeconds(0.5f * player.saphInBlade);
+        moveSpeed = 5;
+        attackCooldown = 1.2f;
+    }
+
+    public IEnumerator ProjCold()
+    {
+        moveSpeed = 3;
+        attackCooldown = 2;
+        yield return new WaitForSeconds(0.5f * player.saphInProj);
+        moveSpeed = 5;
+        attackCooldown = 1.2f;
+    }
+
+    public IEnumerator SwordLightning()
+    {
+        canAttack = false;
+        moveSpeed = 0;
+        yield return new WaitForSeconds(0.1f * player.topazInBlade);
+        canAttack = true;
+        moveSpeed = 5;
+    }
+
+    public IEnumerator ProjLightning()
+    {
+        canAttack = false;
+        moveSpeed = 0;
+        yield return new WaitForSeconds(0.1f * player.topazInProj);
+        canAttack = true;
+        moveSpeed = 5;
+    }
+
+    public IEnumerator SwordCursed()
+    {
+        damage -= damage / 2;
+        yield return new WaitForSeconds(0.5f * player.bdInBlade);
+    }
+
+    public IEnumerator ProjCursed()
+    {
+        damage -= damage / 2;
+        yield return new WaitForSeconds(0.5f * player.bdInProj);
     }
 }

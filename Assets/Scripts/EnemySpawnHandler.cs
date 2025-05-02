@@ -35,8 +35,7 @@ public class EnemySpawnHandler : MonoBehaviour
 
     public void SpawnEnemy()
     {
-        if (hasSpawnedEnemy) return; 
-
+        if (hasSpawnedEnemy) { return; } 
         GameObject newEnemy = Instantiate(enemyPrefab, spawnPoint.position, Quaternion.identity);
         newEnemy.GetComponent<Enemy>().SetSpawnHandler(this); 
         hasSpawnedEnemy = true;

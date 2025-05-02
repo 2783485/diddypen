@@ -46,6 +46,22 @@ public class PlayerController : MonoBehaviour
     public ParticleSystem bloodExplosionVFX;
     public GameObject playerCorpse;
     public bool hitStopOn;
+    public bool isFiery;
+    public bool isCold;
+    public bool isShocking;
+    public bool isCursed;
+    public bool isFieryProj;
+    public bool isColdProj;
+    public bool isCursedProj;
+    public bool isLightningProj;
+    public int rubiesInBlade;
+    public int rubiesInProj;
+    public int saphInBlade;
+    public int saphInProj;
+    public int topazInBlade;
+    public int topazInProj;
+    public int bdInBlade;
+    public int bdInProj;
 
     bool isAttacking = false;
     Rigidbody2D rb;
@@ -71,6 +87,11 @@ public class PlayerController : MonoBehaviour
     void Update()
     {
         levelUpCost = 10 + playerLevel * 5;
+        attackCooldown = 1.5f;
+        if (agility > 10)
+        {
+            attackCooldown = 1.5f + agility / 50;
+        }
         if (!isAttacking)
         {
             Move();
@@ -321,6 +342,16 @@ public class PlayerController : MonoBehaviour
 
     IEnumerator Dash()
     {
+        dashForce = agility * 2;
+        if (dashForce > 25)
+        {
+            dashForce = 25 + agility / 25; 
+        }
+        dashDuration = agility / 50;
+        if (dashDuration > 0.4f)
+        {
+            dashDuration = 0.4f + agility / 100;
+        }
         isDashing = true;
         hasIFrames = true;
         rb.velocity = new Vector2((isFacingRight ? 1 : -1) * dashForce, 0);
@@ -331,7 +362,11 @@ public class PlayerController : MonoBehaviour
         rb.velocity = Vector2.zero;
         isDashing = false;
         hasIFrames = false;
-
+        dashCooldown = 1 - agility / 40;
+        if (dashCooldown < 0.75)
+        {
+            dashCooldown = 0.75f - agility / 100;
+        }
         dashCooldownTimer = dashCooldown;
     }
 
@@ -363,6 +398,11 @@ public class PlayerController : MonoBehaviour
         dashForce = 0;
         Instantiate(playerCorpse, transform.position, Quaternion.identity);
         Destroy(gameObject, 0.05f);
+    }
+    IEnumerator LoadGameOver()
+    {
+        yield return new WaitForSeconds(3f);
+        FindObjectOfType<SceneLoader>().LoadNextScene();
     }
     public IEnumerator HitStop()
     {
@@ -416,7 +456,7 @@ public class PlayerController : MonoBehaviour
     }
     public void HealPotion()
     {
-        if (FindObjectOfType<InventoryManager>().healthPot > 0)
+        if (FindObjectOfType<InventoryManager>().healthPot > 0 && health < maxHealth)
         {
             FindObjectOfType<InventoryManager>().healthPot--;
             health += vitality / 2;
