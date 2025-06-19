@@ -32,19 +32,19 @@ public class ArcaneProjectile : MonoBehaviour
         {
             if (player.isCursedProj)
             {
-                StartCoroutine(enemy.ProjCursed());
+                enemy.CursedProj();
             }
             if (player.isLightningProj)
             {
-                StartCoroutine(enemy.ProjLightning());
+                enemy.LightningProj();
             }
             if (player.isColdProj)
             {
-                StartCoroutine(enemy.ProjCold());
+                enemy.StartProjCold();
             }
             if (player.isFieryProj)
             {
-                StartCoroutine(enemy.ProjOnFire());
+                enemy.FireProj();
             }
 
             enemy.HitAnimation();

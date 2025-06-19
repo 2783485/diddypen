@@ -28,4 +28,13 @@ public class SceneLoader : MonoBehaviour
     {
         SceneManager.LoadScene(2);
     }
+    IEnumerator GameOver()
+    {
+        yield return new WaitForSeconds(3f);
+        LoadNextScene();
+    }
+    public void LoadGameOver()
+    {
+        StartCoroutine(GameOver());
+    }
 }

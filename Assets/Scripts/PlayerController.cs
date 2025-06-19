@@ -396,19 +396,15 @@ public class PlayerController : MonoBehaviour
         jumpForce = 0;
         dashDuration = 0;
         dashForce = 0;
+        FindObjectOfType<SceneLoader>().LoadGameOver();
         Instantiate(playerCorpse, transform.position, Quaternion.identity);
         Destroy(gameObject, 0.05f);
-    }
-    IEnumerator LoadGameOver()
-    {
-        yield return new WaitForSeconds(3f);
-        FindObjectOfType<SceneLoader>().LoadNextScene();
     }
     public IEnumerator HitStop()
     {
         hitStopOn = true;
         Time.timeScale = 0f;
-        yield return new WaitForSecondsRealtime(0.05f);
+        yield return new WaitForSecondsRealtime(0.1f);
         Time.timeScale = 1f;
         hitStopOn = false;
     }

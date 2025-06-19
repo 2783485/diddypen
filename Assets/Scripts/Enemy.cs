@@ -78,13 +78,12 @@ public class Enemy : MonoBehaviour
 
         if (FindObjectOfType<EnemyLevelManager>().enemyLevel <= 9)
         {
-            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
-            damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
+            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
         }
         else if (FindObjectOfType<EnemyLevelManager>().enemyLevel > 9)
         {
-            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 50;
-            damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 10;
+            health = 95 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 25;
+            damage = 15 + FindObjectOfType<EnemyLevelManager>().enemyLevel * 5;
         }
 
         player = FindObjectOfType<PlayerController>();
@@ -320,7 +319,10 @@ public class Enemy : MonoBehaviour
         Time.timeScale = 1f;
         hitStopOn = false;
     }
-
+    public void StartFireSword()
+    {
+        StartCoroutine(SwordOnFire());
+    }
     public IEnumerator SwordOnFire()
     {
         for (int i = 0; i < 10; i++)
@@ -328,9 +330,16 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             health -= player.rubiesInBlade;
             HitAnimation();
+            if (health <= 0)
+            {
+                Die();
+            }
         }
     }
-
+    public void FireProj()
+    {
+        StartCoroutine(ProjOnFire());
+    }
     public IEnumerator ProjOnFire()
     {
         for (int i = 0; i < 10; i++)
@@ -338,9 +347,16 @@ public class Enemy : MonoBehaviour
             yield return new WaitForSeconds(0.5f);
             health -= player.rubiesInProj;
             HitAnimation();
+            if (health <= 0)
+            {
+                Die();
+            }
         }
     }
-
+    public void ColdSword()
+    {
+        StartCoroutine(SwordCold());
+    }
     public IEnumerator SwordCold()
     {
         moveSpeed = 3;
@@ -349,7 +365,10 @@ public class Enemy : MonoBehaviour
         moveSpeed = 5;
         attackCooldown = 1.2f;
     }
-
+    public void StartProjCold()
+    {
+        StartCoroutine(ProjCold());
+    }
     public IEnumerator ProjCold()
     {
         moveSpeed = 3;
@@ -358,7 +377,10 @@ public class Enemy : MonoBehaviour
         moveSpeed = 5;
         attackCooldown = 1.2f;
     }
-
+    public void LightningSword()
+    {
+        StartCoroutine(SwordLightning());
+    }
     public IEnumerator SwordLightning()
     {
         canAttack = false;
@@ -367,7 +389,10 @@ public class Enemy : MonoBehaviour
         canAttack = true;
         moveSpeed = 5;
     }
-
+    public void LightningProj()
+    {
+        StartCoroutine(ProjLightning());
+    }
     public IEnumerator ProjLightning()
     {
         canAttack = false;
@@ -376,13 +401,19 @@ public class Enemy : MonoBehaviour
         canAttack = true;
         moveSpeed = 5;
     }
-
+    public void CursedSword()
+    {
+        StartCoroutine(SwordCursed());
+    }
     public IEnumerator SwordCursed()
     {
         damage -= damage / 2;
         yield return new WaitForSeconds(0.5f * player.bdInBlade);
     }
-
+    public void CursedProj()
+    {
+        StartCoroutine(ProjCursed());
+    }
     public IEnumerator ProjCursed()
     {
         damage -= damage / 2;

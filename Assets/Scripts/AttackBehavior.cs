@@ -23,19 +23,19 @@ public class AttackBehavior : MonoBehaviour
         {
             if (player.isFiery)
             {
-                StartCoroutine(enemy.SwordOnFire());
+                enemy.StartFireSword();
             }
             if (player.isCold)
             {
-                StartCoroutine(enemy.SwordCold());
+                enemy.ColdSword();
             }
             if (player.isShocking)
             {
-                StartCoroutine(enemy.SwordLightning());
+                enemy.LightningSword();
             }
             if (player.isCursed)
             {
-                StartCoroutine(enemy.SwordCursed());
+                enemy.CursedSword();
             }
 
             enemy.HitAnimation();

@@ -428,7 +428,10 @@ MonoBehaviour:
     G to comsume a buffing potion    
     LMB to attack
 
-    RMB to use the projectile skill     ESCAPE to pause'
+    RMB to use the projectile skill     ESCAPE to pause
+
+    E
+    to open the gates'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 375ca75d87f0d214f847f4ac2ab98232, type: 2}
   m_sharedMaterial: {fileID: -7124135266255745461, guid: 375ca75d87f0d214f847f4ac2ab98232, type: 2}
